@@ -1,4 +1,38 @@
+# IDEs and editors
+.vscode
+.idea
+.c9/
+*.launch
+
+.vscode/
+/target/
+/.apt_generated/
+/.settings/
+/build/
 .classpath
+.factorypath
 .project
-build/
-.settings/
+.jsdtscope
+*.prefs
+*.core.xml
+*.prefs.xml
+*.name
+*.container
+*.component
+
+
+# ignore below files from frontend
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# IDE - VSCode
+/src/frontend/.vscode/*
+!/src/frontend/.vscode/settings.json
+!/src/frontend/.vscode/tasks.json
+!/src/frontend/.vscode/launch.json
+!/src/frontend/.vscode/extensions.json
+
+# System Files
+.DS_Store
+/src/frontend/Thumbs.db
+/bin/
+/.apt_generated_tests/
