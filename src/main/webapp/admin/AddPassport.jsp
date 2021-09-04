@@ -77,7 +77,7 @@ request.setAttribute("profile", profile);
 	</tr>
 	<tr>
 		<td>Country<span class="mnd">*</span></td>
-		<td><span class="select-wrapper"><select name="countryId" onchange="getVisaTypes()">
+		<td><span class="select-wrapper"><select name="COUNTRY_ID" onchange="getVisaTypes()">
 			<option value="0">Select Country</option>
 			<c:forEach var="country" items="${cList}">
 				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
@@ -162,7 +162,7 @@ $(document).ready(function(){
 });
 
 var fields = [
-	{name:'countryId', display:'Country', rules:'required|callback_check_select'},
+	{name:'COUNTRY_ID', display:'Country', rules:'required|callback_check_select'},
 	{name:'passportType', display:'Passport Type', rules:'required|max_length[20]'},
 	{name:'passportNo', display:'Passport Number', rules:'required|max_length[20]'},
 	{name:'birthPlace', display:'Place of Birth', rules:'required|max_length[50]'},

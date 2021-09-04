@@ -9,7 +9,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Update Country | Voyager Compass</title>
+	<title>Add Hotel | Voyager Compass</title>
 	
 	<link type="text/css" rel="stylesheet" href="/css/global.css"/>
 	<link type="text/css" rel="stylesheet" href="/css/form-style.css"/>
@@ -31,67 +31,78 @@
 
 
 <main>
-<h2>Update Country</h2>
+<h2>Add Hotel</h2>
 
 <jk:status var="status"/>
 
 <div class="page-content">
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
-
 <%
-int countryId = Integer.parseInt(request.getParameter("countryId"));
-
-if (countryId < 1) {
-	response.sendRedirect("/index.jsp");
-	return;
-}
-
-request.setAttribute("country", new CountryDAO().getCountry(countryId));
+List<Country> cList = new CountryDAO().getCountryList();
+request.setAttribute("cList", cList);
 %>
-
-<form method="post" name="register" action="/UpdateCountryAction">
-<input type="hidden" name="countryId" value="${country.getCountryID()}">
-<table class="form-grid">
+<form method="post" name="register" action="/HotelAction"><table class="form-grid">
 	<tr>
-		<td>Country Name<span class="mnd">*</span></td>
-		<td><input type="text" name="countryName" value="${country.getCountryName()}" /></td>
+		<td>Hotel Name<span class="mnd">*</span></td>
+		<td><input type="text" name="HotelName" /></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Country Abbr<span class="mnd">*</span></td>
-		<td><input type="text" name="countryFullName" value="${country.getCountryFullName()}"/></td>
+		<td>Phone No<span class="mnd">*</span></td>
+		<td><input type="text" name="PhoneNo" /></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Demonym<span class="mnd">*</span></td>
-		<td><input type="text" name="nationality" value="${country.getNationality()}"></td>
+		<td>Room Min Charge<span class="mnd">*</span></td>
+		<td><input type="text" name="MinCharge"></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Country description</td>
-		<td><input type="text" name="countryDesc" value="${country.getCountryDesc()}"></td>
+		<td>Room Max Charge<span class="mnd">*</span></td>
+		<td><input type="text" name="MaxCharge"></td>
+		<td></td>
+	</tr>
+	
+	<tr>
+		<td>Address<span class="mnd">*</span></td>
+		<td><textarea name="HotelAddress"></textarea></td>
+		<td></td>
+	</tr>
+	
+	<tr>
+		<td>Country<span class="mnd">*</span></td>
+		<td><select name="COUNTRY_ID">
+			<option value="0">Select Country</option>
+			<c:forEach var="country" items="${cList }">
+				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
+			</c:forEach>
+		</select></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>&nbsp;</td>
-		<td><input type="submit" name="Submit" value="Update Country" class="button" /></td>
+		<td><input type="submit" name="Submit" value="Add Hotel" class="button" /></td>
 		<td></td>
 	</tr>
-</table></form>
+</table>
+</form>
 </div>
 </div><!-- page-conent -->
 
 <script>
+
 var fields = [
-{name:'countryName',display:'Country name', rules:'required|max_length[50]'},
-{name:'countryFullName',display:'Country Full Name', rules:'required|max_length[50]'},
-{name:'nationality',display:'Nationality', rules:'required|max_length[50]'},
-{name:'countryDesc',display:'Country description', rules:'max_length[100]'}
+{name:'HotelName', display:'Hotel Name', rules:'required|max_length[30]'},
+{name:'PhoneNo', display:'Contact no', rules:'required|max_length[30]'},
+{name:'MinCharge', display:'Minimum Charge', rules:'required|decimal'},
+{name:'MaxCharge', display:'Maximum Charge', rules:'required|decimal'},
+{name:'HotelAddress', display:'Hotel Address', rules:'required|max_length[50]'},
+{name:'COUNTRY_ID', display:'Country', rules:'required|callback_check_select'}
 ];
 
 function handleFormErrors(errors, event) {
@@ -118,8 +129,15 @@ function handleFormErrors(errors, event) {
 }
 
 var validator = new FormValidator('register', fields, handleFormErrors);
-</script>
 
+
+validator.registerCallback('check_select', function(value){
+	return document.register.COUNTRY_ID.selectedIndex > 0;
+})
+.setMessage('check_select', 'The <i>%s</i> field is required.');
+
+</script>
+		
 </main>
 <jsp:include page="/oth/footer.html"/>
 </body>

@@ -106,7 +106,7 @@ request.setAttribute("dList", dList);
 	
 <tr>
 	<td>Department</td>
-	<td><span class="select-wrapper"><select name="DepartmentID">
+	<td><span class="select-wrapper"><select name="DEPARTMENT_ID">
 		<option value="0">Select Department</option>
 	<c:forEach var="dept" items="${dList }">
 		<option value="${dept.getDepartmentID()}">${dept.getDepartmentName()}</option>
@@ -120,13 +120,13 @@ request.setAttribute("dList", dList);
 
 <tr>
 	<td>First Name</td>
-	<td><input type="text" name="firstName" value=""></td>
+	<td><input type="text" name="FIRST_NAME" value=""></td>
 	<td></td>
 </tr>
 
 <tr>
 	<td>Last Name</td>
-	<td><input type="text" name="lastName" value=""/></td>
+	<td><input type="text" name="LAST_NAME" value=""/></td>
 	<td></td>
 </tr>
 
@@ -356,9 +356,9 @@ var rules = [
 { name:"squest", display:"Security Question", rules:"required|callback_check_select"},
 { name:"secrete", display:"Security Answer", rules:"required|min_length[5]|max_length[70]"},
 { name:"Desingation", display:"Designation", rules:"required|callback_check_select"},
-{ name:"DepartmentID", display:"Department", rules:"required|callback_check_select"},
-{ name:"firstName", display:"First Name", rules:"required|max_length[20]"},
-{ name:"lastName", display:"Last Name", rules:"required|max_length[20]"},
+{ name:"DEPARTMENT_ID", display:"Department", rules:"required|callback_check_select"},
+{ name:"FIRST_NAME", display:"First Name", rules:"required|max_length[20]"},
+{ name:"LAST_NAME", display:"Last Name", rules:"required|max_length[20]"},
 { name:"dob", display:"Date of Birth", rules:"required"},
 { name:"photo", display:"Photograph", rules:"required|is_file_type[jpg,jpeg,png]|callback_check_photo"},
 { name:"gender", display:"Gender", rules:"required|callback_check_select"},

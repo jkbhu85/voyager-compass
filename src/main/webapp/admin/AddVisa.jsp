@@ -26,11 +26,11 @@
 function getVisaTypes() {
 	initProgress();
 	
-	if (document.register.countryId.selectedIndex == 0) {
+	if (document.register.COUNTRY_ID.selectedIndex == 0) {
 		return;
 	}
 	
-	var countryId = document.register.countryId.value;
+	var COUNTRY_ID = document.register.COUNTRY_ID.value;
 	var url = "/GetVisaType";
 	
 	var xhttp = null;
@@ -67,7 +67,7 @@ function getVisaTypes() {
 		}
 		xhttp.open("POST", url, true);
 		xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		xhttp.send('countryId=' + countryId);
+		xhttp.send('COUNTRY_ID=' + COUNTRY_ID);
 	}
 }
 
@@ -134,7 +134,7 @@ if (!pptDb.passportExists(pptId)) {
 <table class="form-grid">
 	<tr>
 		<td>Country<span class="mnd">*</span></td>
-		<td><span class="select-wrapper"><select name="countryId" onchange="getVisaTypes()">
+		<td><span class="select-wrapper"><select name="COUNTRY_ID" onchange="getVisaTypes()">
 			<option value="0">Select Country</option>
 			<c:forEach var="country" items="${cList}">
 				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
@@ -230,7 +230,7 @@ $(document).ready(function(){
 
 /*
 var fields = [
-	{name:'countryId',   display:'Country', rules:'required|callback_check_select'},
+	{name:'COUNTRY_ID',   display:'Country', rules:'required|callback_check_select'},
 	{name:'visaTypeId',  display:'Visa Type', rules:'required|callback_check_select'},
 	{name:'visaNo',      display:'Visa Number', rules:'required|max_length[20]|alpha_numeric'},
 	{name:'issueDate',   display:'Date of Issue', rules:'required'},

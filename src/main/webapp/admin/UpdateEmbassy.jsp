@@ -9,7 +9,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Add Visa Rule | Voyager Compass</title>
+	<title>Update Embassy | Voyager Compass</title>
 	
 	<link type="text/css" rel="stylesheet" href="/css/global.css"/>
 	<link type="text/css" rel="stylesheet" href="/css/form-style.css"/>
@@ -31,96 +31,72 @@
 
 
 <main>
-<h2>Add Visa Rule</h2>
+<h2>Update Embassy</h2>
 
 <jk:status var="status"/>
 
 <div class="page-content">
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
-
 <%
+String emb = request.getParameter("EmbassyID");
+int embassyId = Integer.parseInt(emb);
+request.setAttribute("embassy", new EmbassyDAO().getEmbassy(embassyId));
 request.setAttribute("cList", new CountryDAO().getCountryList());
-request.setAttribute("vtList", new VisaTypeDAO().getVisaTypeList());
 %>
-
-<form method="post" name="register" action=""><table class="form-grid">
+<form method="post" name="register" action="/UpdateEmbassyAction">
+<input type="hidden" name="EmbassyID" value="${embassy.getEmbassyID()}"><table class="form-grid">
 	<tr>
-		<td>Country Name</td>
-		<td><span class="select-wrapper"><select name="CountryID">
+		<td>Country<span class="mnd">*</span></td>
+		<td><span class="select-wrapper"><select name="COUNTRY_ID">
 			<option value="0">Select Country</option>
-			<c:forEach var="country" items="${cList}" varStatus="counter">
-				<option value="${country.getCountryID()}">${country.getCountryName()}</option>			
+			<c:forEach var="country" items="${cList }">
+				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
 			</c:forEach>
-		</select><span class="select-arrow"></span></span></td>
+		</select>
+		<span class="select-arrow"></span>
+		</span></td>
 		<td></td>
 	</tr>
+
 	<tr>
-		<td>Visa Type</td>
-		<td><span class="select-wrapper"><select name="VisaTypeID">
-			<option value="0">Select Visa Type</option>
-			
-			<c:forEach var="visaType" items="${vtList}" varStatus="counter">
-				<option value="${visaType.getVisaTypeID()}">${visaType.getVisaTypeName()}</option>			
-			</c:forEach>
-		</select><span class="select-arrow"></span></span></td>
+		<td>Embassy Name<span class="mnd">*</span></td>
+		<td><input type="text" name="EMBASSY_NAME" value="${embassy.getEmbassyName()}" ></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Visa Type as Per Country</td>
-		<td><input type="text" name="VisaTypeasPerCountry" /></td>
+		<td>Contact No<span class="mnd">*</span></td>
+		<td><input type="text" name="PhoneNo" value="${embassy.getPhoneNo()}"/></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Eligibility</td>
-		<td><input type="text" name="Eligibility" /></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td>Visa Cost</td>
-		<td><input type="text" name="VisaCost"></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td>Max Visa Permit Time</td>
-		<td><input type="text" name="PermitTime"></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td>Rules and Regulations</td>
-		<td><textarea name="Rules&Regulations"></textarea></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td>Stamping Guidelines</td>
-		<td><textarea name="Guidelines"></textarea></td>
-		<td></td>
-	</tr>
-	
-	<tr>
-		<td>Remarks</td>
-		<td><textarea name="Remarks"></textarea></td>
+		<td>Embassy Address<span class="mnd">*</span></td>
+		<td><textarea name="Address">${embassy.getEmbassyAddr()}</textarea></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td></td>
-		<td><input type="submit" name="Submit" value="Add Visa" class="button"/></td>
+		<td><input type="submit" name="Submit" value="Update Embassy" class="button"/></td>
 		<td></td>
 	</tr>
 </table></form>
+
 </div>
 </div><!-- page-conent -->
 
 <script>
+window.addEventListener("load", function(){
+	document.register.COUNTRY_ID.value = '${embassy.getCountryID()}';
+});
+
 var fields = [
-{}
+{name:'COUNTRY_ID',display:'Country',rules:'required|callback_check_select'},
+{name:'EMBASSY_NAME',display:'Embassy Name',rules:'required|max_length[100]'},
+{name:'PhoneNo',display:'Contact no',rules:'required|max_length[20]'},
+{name:'Address',display:'Embassy Address',rules:'required|max_length[200]'}
 ];
 
 function handleFormErrors(errors, event) {
@@ -147,10 +123,14 @@ function handleFormErrors(errors, event) {
 }
 
 var validator = new FormValidator('register', fields, handleFormErrors);
+
+validator.registerCallback('check_select', function(value){
+	return document.register.COUNTRY_ID.selectedIndex > 0;
+})
+.setMessage('check_select', 'The <i>%s</i> field is required.');
 </script>
 
 </main>
 <jsp:include page="/oth/footer.html"/>
 </body>
 </html>
-

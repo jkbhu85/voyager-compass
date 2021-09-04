@@ -59,7 +59,7 @@ request.setAttribute("visaType", new VisaTypeDAO().getVisaType(visaTypeId));
 <table class="form-grid">
 	<tr>
 		<td>Country<span class="mnd">*</span></td>
-		<td><span class="select-wrapper"><select name="CountryID">
+		<td><span class="select-wrapper"><select name="COUNTRY_ID">
 			<option value="0">Select Country</option>
 			<c:forEach var="country" items="${cList }">
 				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
@@ -126,7 +126,7 @@ request.setAttribute("visaType", new VisaTypeDAO().getVisaType(visaTypeId));
 <script>
 
 window.addEventListener("load", function(){
-	document.register.CountryID.value = '${visaType.getCntVtFk()}';
+	document.register.COUNTRY_ID.value = '${visaType.getCntVtFk()}';
 	document.register.ReqAdv.value = '${visaType.getReqAdv()}'
 });
 
@@ -137,7 +137,7 @@ var fields = [
 {name:'VisaTypeEleg', display:'',rules:'required|max_length[100]'},
 {name:'MaxDur',       display:'Max Duration of stay',rules:'numeric'},
 {name:'StampGuide',  display:'Stamping Guidelines',rules:'max_length[200]'},
-{name:'CountryID',  display:'Country',rules:'required|callback_check_select'},
+{name:'COUNTRY_ID',  display:'Country',rules:'required|callback_check_select'},
 {name:'ReqAdv',  display:'Required in advance',rules:'required'}
 ];
 
@@ -167,7 +167,7 @@ var fields = [
 	var validator = new FormValidator('register', fields, handleFormErrors);
 
 	validator.registerCallback('check_select', function(value){
-		return document.register.CountryID.selectedIndex > 0;
+		return document.register.COUNTRY_ID.selectedIndex > 0;
 	})
 	.setMessage('check_select', 'The <i>%s</i> field is required.');
 </script>

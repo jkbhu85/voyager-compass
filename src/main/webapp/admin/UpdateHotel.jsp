@@ -9,7 +9,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Add Hotel | Voyager Compass</title>
+	<title>Update Hotel | Voyager Compass</title>
 	
 	<link type="text/css" rel="stylesheet" href="/css/global.css"/>
 	<link type="text/css" rel="stylesheet" href="/css/form-style.css"/>
@@ -31,79 +31,91 @@
 
 
 <main>
-<h2>Add Hotel</h2>
+<h2>Update Hotel</h2>
 
 <jk:status var="status"/>
 
 <div class="page-content">
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
+
 <%
+int hotelId = Integer.parseInt(request.getParameter("HotelID"));
+
+request.setAttribute("hotel", new HotelDAO().getHotel(hotelId));
+
 List<Country> cList = new CountryDAO().getCountryList();
 request.setAttribute("cList", cList);
 %>
-<form method="post" name="register" action="/HotelAction"><table class="form-grid">
+
+<form method="post" name="register" action="/UpdateHotelAction">
+<input type="hidden" readonly="readonly" value="${hotel.getHotelID()}" name="HotelID">
+<table class="form-grid">
 	<tr>
 		<td>Hotel Name<span class="mnd">*</span></td>
-		<td><input type="text" name="HotelName" /></td>
+		<td><input type="text" name="HotelName" value="${hotel.getHotelName()}"/></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Phone No<span class="mnd">*</span></td>
-		<td><input type="text" name="PhoneNo" /></td>
+		<td><input type="text" name="PhoneNo" value="${hotel.getHotelPhno()}"/></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Room Min Charge<span class="mnd">*</span></td>
-		<td><input type="text" name="MinCharge"></td>
+		<td><input type="text" name="MinCharge" value="${hotel.getMinCharge()}"></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Room Max Charge<span class="mnd">*</span></td>
-		<td><input type="text" name="MaxCharge"></td>
+		<td><input type="text" name="MaxCharge" value="${hotel.getMaxCharge()}"></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Address<span class="mnd">*</span></td>
-		<td><textarea name="HotelAddress"></textarea></td>
+		<td><textarea name="HotelAddress" >${hotel.getHotelAddr()}</textarea></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Country<span class="mnd">*</span></td>
-		<td><select name="CountryID">
+		<td><span class="select-wrapper"><select name="COUNTRY_ID">
 			<option value="0">Select Country</option>
 			<c:forEach var="country" items="${cList }">
 				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
 			</c:forEach>
-		</select></td>
+		</select><span class="select-arrow"></span></span></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>&nbsp;</td>
-		<td><input type="submit" name="Submit" value="Add Hotel" class="button" /></td>
+		<td></td>
+		<td><input type="submit" class="button" name="Submit" value="Update Hotel"></td>
 		<td></td>
 	</tr>
-</table>
-</form>
+</table></form>
 </div>
 </div><!-- page-conent -->
 
 <script>
-
 var fields = [
 {name:'HotelName', display:'Hotel Name', rules:'required|max_length[30]'},
 {name:'PhoneNo', display:'Contact no', rules:'required|max_length[30]'},
 {name:'MinCharge', display:'Minimum Charge', rules:'required|decimal'},
 {name:'MaxCharge', display:'Maximum Charge', rules:'required|decimal'},
 {name:'HotelAddress', display:'Hotel Address', rules:'required|max_length[50]'},
-{name:'CountryID', display:'Country', rules:'required|callback_check_select'}
+{name:'COUNTRY_ID', display:'Country', rules:'required|callback_check_select'}
 ];
+
+
+window.addEventListener("load", function(){
+	var COUNTRY_ID = '${hotel.getCountryID()}';
+	document.register.COUNTRY_ID.value = COUNTRY_ID;
+});
 
 function handleFormErrors(errors, event) {
 	event.preventDefault();
@@ -129,15 +141,8 @@ function handleFormErrors(errors, event) {
 }
 
 var validator = new FormValidator('register', fields, handleFormErrors);
-
-
-validator.registerCallback('check_select', function(value){
-	return document.register.CountryID.selectedIndex > 0;
-})
-.setMessage('check_select', 'The <i>%s</i> field is required.');
-
 </script>
-		
+
 </main>
 <jsp:include page="/oth/footer.html"/>
 </body>

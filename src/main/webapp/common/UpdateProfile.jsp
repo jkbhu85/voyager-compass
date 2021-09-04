@@ -54,13 +54,13 @@ request.setAttribute("prs", prs);
 <form action="/UpdateAction" name="register" enctype="multipart/form-data" method="POST"><table class="form-grid">
 	<tr>
 		<td>First Name</td>
-		<td><input type="text" name="firstName" value="${prs.getFirstname()}" readonly="readonly" /></td>
+		<td><input type="text" name="FIRST_NAME" value="${prs.getFirstname()}" readonly="readonly" /></td>
 		<td></td>
 	</tr>
 	
 	<tr>
 		<td>Last Name</td>
-		<td><input type="text" name="lastName" value="${prs.getLastname()}" readonly="readonly" /></td>
+		<td><input type="text" name="LAST_NAME" value="${prs.getLastname()}" readonly="readonly" /></td>
 		<td></td>
 	</tr>
 	

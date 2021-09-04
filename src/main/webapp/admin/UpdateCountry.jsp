@@ -9,7 +9,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<title>Update Embassy | Voyager Compass</title>
+	<title>Update Country | Voyager Compass</title>
 	
 	<link type="text/css" rel="stylesheet" href="/css/global.css"/>
 	<link type="text/css" rel="stylesheet" href="/css/form-style.css"/>
@@ -31,72 +31,67 @@
 
 
 <main>
-<h2>Update Embassy</h2>
+<h2>Update Country</h2>
 
 <jk:status var="status"/>
 
 <div class="page-content">
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
-<%
-String emb = request.getParameter("EmbassyID");
-int embassyId = Integer.parseInt(emb);
-request.setAttribute("embassy", new EmbassyDAO().getEmbassy(embassyId));
-request.setAttribute("cList", new CountryDAO().getCountryList());
-%>
-<form method="post" name="register" action="/UpdateEmbassyAction">
-<input type="hidden" name="EmbassyID" value="${embassy.getEmbassyID()}"><table class="form-grid">
-	<tr>
-		<td>Country<span class="mnd">*</span></td>
-		<td><span class="select-wrapper"><select name="CountryID">
-			<option value="0">Select Country</option>
-			<c:forEach var="country" items="${cList }">
-				<option value="${country.getCountryID()}">${country.getCountryName()}</option>
-			</c:forEach>
-		</select>
-		<span class="select-arrow"></span>
-		</span></td>
-		<td></td>
-	</tr>
 
+<%
+int COUNTRY_ID = Integer.parseInt(request.getParameter("COUNTRY_ID"));
+
+if (COUNTRY_ID < 1) {
+	response.sendRedirect("/index.jsp");
+	return;
+}
+
+request.setAttribute("country", new CountryDAO().getCountry(COUNTRY_ID));
+%>
+
+<form method="post" name="register" action="/UpdateCountryAction">
+<input type="hidden" name="COUNTRY_ID" value="${country.getCountryID()}">
+<table class="form-grid">
 	<tr>
-		<td>Embassy Name<span class="mnd">*</span></td>
-		<td><input type="text" name="EmbassyName" value="${embassy.getEmbassyName()}" ></td>
+		<td>Country Name<span class="mnd">*</span></td>
+		<td><input type="text" name="countryName" value="${country.getCountryName()}" /></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Contact No<span class="mnd">*</span></td>
-		<td><input type="text" name="PhoneNo" value="${embassy.getPhoneNo()}"/></td>
+		<td>Country Abbr<span class="mnd">*</span></td>
+		<td><input type="text" name="countryFullName" value="${country.getCountryFullName()}"/></td>
 		<td></td>
 	</tr>
 	
 	<tr>
-		<td>Embassy Address<span class="mnd">*</span></td>
-		<td><textarea name="Address">${embassy.getEmbassyAddr()}</textarea></td>
+		<td>Demonym<span class="mnd">*</span></td>
+		<td><input type="text" name="nationality" value="${country.getNationality()}"></td>
 		<td></td>
 	</tr>
 	
 	<tr>
+		<td>Country description</td>
+		<td><input type="text" name="countryDesc" value="${country.getCountryDesc()}"></td>
 		<td></td>
-		<td><input type="submit" name="Submit" value="Update Embassy" class="button"/></td>
+	</tr>
+	
+	<tr>
+		<td>&nbsp;</td>
+		<td><input type="submit" name="Submit" value="Update Country" class="button" /></td>
 		<td></td>
 	</tr>
 </table></form>
-
 </div>
 </div><!-- page-conent -->
 
 <script>
-window.addEventListener("load", function(){
-	document.register.CountryID.value = '${embassy.getCountryID()}';
-});
-
 var fields = [
-{name:'CountryID',display:'Country',rules:'required|callback_check_select'},
-{name:'EmbassyName',display:'Embassy Name',rules:'required|max_length[100]'},
-{name:'PhoneNo',display:'Contact no',rules:'required|max_length[20]'},
-{name:'Address',display:'Embassy Address',rules:'required|max_length[200]'}
+{name:'countryName',display:'Country name', rules:'required|max_length[50]'},
+{name:'countryFullName',display:'Country Full Name', rules:'required|max_length[50]'},
+{name:'nationality',display:'Nationality', rules:'required|max_length[50]'},
+{name:'countryDesc',display:'Country description', rules:'max_length[100]'}
 ];
 
 function handleFormErrors(errors, event) {
@@ -123,11 +118,6 @@ function handleFormErrors(errors, event) {
 }
 
 var validator = new FormValidator('register', fields, handleFormErrors);
-
-validator.registerCallback('check_select', function(value){
-	return document.register.CountryID.selectedIndex > 0;
-})
-.setMessage('check_select', 'The <i>%s</i> field is required.');
 </script>
 
 </main>

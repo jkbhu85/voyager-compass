@@ -57,7 +57,7 @@ request.setAttribute("cList", cList);
 	<tr>
 		<td class="block-wrapper"><c:choose>
 		<c:when test="${sessionScope.role.equals('admin')}">
-			<a class="block" href="/admin/UpdateCountry.jsp?countryId=${country.getCountryID()}">${counter.count}</a>
+			<a class="block" href="/admin/UpdateCountry.jsp?COUNTRY_ID=${country.getCountryID()}">${counter.count}</a>
 		</c:when>
 		<c:otherwise>
 			${counter.count}
