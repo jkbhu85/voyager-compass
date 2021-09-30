@@ -6,10 +6,9 @@ import java.util.*;
 
 import javax.sql.*;
 
-import com.jk.core.util.*;
 import com.zaxxer.hikari.*;
 
-public class AbstractDAO {
+public final class ConnectionUtils {
 
 	private static final int DEFAULT_MAX_POOL_SIZE = 3;
 	private static final int DEFAULT_MIN_IDLE_CONNECTIONS = 1;
@@ -17,16 +16,19 @@ public class AbstractDAO {
 	private static final Object LOCK = new Object();
 	private static Properties mProps;
 	private static DataSource dataSource;
+	
+	// no instantiation
+	private ConnectionUtils() {}
 
-	public static Properties getProperties()
+	private static Properties getProperties()
 	{
 		if (mProps == null) {
 			mProps = new Properties();
 			try {
 				mProps.load(findResourceStream());
 			}
-			catch (IOException e) {
-				LoggerManager.writeLogInfo(e);
+			catch (Exception e) {
+				throw new IllegalStateException("Error occurred while loading application properties.", e);
 			}
 		}
 		return mProps;
@@ -34,16 +36,16 @@ public class AbstractDAO {
 
 	static InputStream findResourceStream()
 	{
-		InputStream in = AbstractDAO.class
+		InputStream in = ConnectionUtils.class
 				.getResourceAsStream("application.properties");
 		if (in == null) {
-			return AbstractDAO.class
+			return ConnectionUtils.class
 					.getResourceAsStream("/application.properties");
 		}
 		return in;
 	}
 
-	public Connection getConnection()
+	public static Connection getConnection()
 	{
 		if (dataSource == null) {
 			dataSource = createDataSource();

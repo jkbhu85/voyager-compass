@@ -1,16 +1,15 @@
 
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.LoggerManager;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class HotelDAO extends AbstractDAO {
+public class HotelDao {
 	
 	private static final String SQL_INSERT_HOTEL = ""
 			+ "INSERT INTO HOTELMASTER VALUES(?,?,?,?,?,?,?)";
@@ -32,8 +31,8 @@ public class HotelDAO extends AbstractDAO {
 			pstmt.setInt(col++, hotel.getCountryID());
 
 			flag = pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -64,8 +63,8 @@ public class HotelDAO extends AbstractDAO {
 			pstmt.setInt(col++, hotel.getHotelID());
 
 			flag = pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -102,8 +101,8 @@ public class HotelDAO extends AbstractDAO {
 
 				list.add(hotel);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -142,8 +141,8 @@ public class HotelDAO extends AbstractDAO {
 
 				list.add(hotel);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -178,8 +177,8 @@ public class HotelDAO extends AbstractDAO {
 				hotel.setCountryID(rs.getInt(8));
 				hotel.setCountryName(rs.getString(9));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

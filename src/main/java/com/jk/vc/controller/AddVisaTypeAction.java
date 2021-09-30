@@ -40,7 +40,7 @@ public class AddVisaTypeAction extends HttpServlet {
 		visaType.setStampGuide(request.getParameter("StampGuide"));
 		visaType.setReqAdv(Integer.parseInt(request.getParameter("ReqAdv")));
 
-		boolean flag = new VisaTypeDAO().insertVisaType(visaType);
+		boolean flag = new VisaTypeDao().insertVisaType(visaType);
 
 		if (flag) {
 			target = "/common/ViewVisaTypes.jsp";

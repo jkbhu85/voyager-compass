@@ -32,7 +32,7 @@ public class AddDeptAction extends HttpServlet {
 		dept.setDepartmentAbbr(request.getParameter("DeptAbbr"));
 		dept.setDepartmentInChgID(0);
 
-		boolean flag = new DepartmentDAO().insertDept(dept);
+		boolean flag = new DepartmentDao().insertDept(dept);
 
 		if (flag) {
 			target = "/common/ViewDepartments.jsp";

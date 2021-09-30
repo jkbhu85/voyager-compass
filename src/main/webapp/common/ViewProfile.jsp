@@ -41,12 +41,12 @@
 String name = (String) session.getAttribute("user");
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
-Profile profile = new ProfileDAO().findProfile(name, path);
-Department dept = new DepartmentDAO().findDeptatmentById(profile.getDeptID());
+Profile profile = new ProfileDao().findProfile(name, path);
+Department dept = new DepartmentDao().findDeptatmentById(profile.getDeptID());
 
 String incharge = dept.getDepartmentInChgID() == profile.getEmpid() ? "(Incharge)" : "";
 
-int pptId = new PassportDAO().findPassportIdByEmployeeId(profile.getEmpid());
+int pptId = new PassportDao().findPassportIdByEmployeeId(profile.getEmpid());
 
 request.setAttribute("pptId", pptId);
 request.setAttribute("dept", dept);

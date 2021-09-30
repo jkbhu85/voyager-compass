@@ -37,10 +37,10 @@
 <%
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
-List<Profile> pList = new ProfileDAO().getAllEmpProfiles(path);
+List<Profile> pList = new ProfileDao().getAllEmpProfiles(path);
 request.setAttribute("pList", pList);
 int count = 0;
-request.setAttribute("pptDb", new PassportDAO());
+request.setAttribute("pptDb", new PassportDao());
 %>
 
 <div class="page-content">

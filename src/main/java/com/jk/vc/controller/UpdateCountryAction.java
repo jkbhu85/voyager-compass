@@ -34,7 +34,7 @@ public class UpdateCountryAction extends HttpServlet {
 		country.setNationality(request.getParameter("nationality"));
 
 		String target = "/admin/UpdateCountry.jsp?countryId=" + country.getCountryID();
-		boolean flag = new CountryDAO().updateCountry(country);
+		boolean flag = new CountryDao().updateCountry(country);
 
 		if (flag) {
 			target = "/common/ViewCountries.jsp";

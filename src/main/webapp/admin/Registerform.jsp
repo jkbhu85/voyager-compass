@@ -54,7 +54,7 @@
 <form action="/Register" method="post" name="register" id="register" enctype="multipart/form-data">
 <table class="form-grid">
 <%
-List<Department> dList = new DepartmentDAO().findAllDepartments();
+List<Department> dList = new DepartmentDao().findAllDepartments();
 request.setAttribute("dList", dList);
 %>
 <tr>

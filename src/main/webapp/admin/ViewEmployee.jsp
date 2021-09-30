@@ -42,12 +42,12 @@ String name = request.getParameter("username");
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
 //System.out.println(name);
-Profile profile = new ProfileDAO().findProfile(name, path);
-Department dept = new DepartmentDAO().findDeptatmentById(profile.getDeptID());
+Profile profile = new ProfileDao().findProfile(name, path);
+Department dept = new DepartmentDao().findDeptatmentById(profile.getDeptID());
 
 String incharge = dept.getDepartmentInChgID() == profile.getEmpid() ? "(Incharge)" : "";
 
-int pptId = new PassportDAO().findPptIdFromEmp(profile.getEmpid());
+int pptId = new PassportDao().findPptIdFromEmp(profile.getEmpid());
 
 request.setAttribute("pptId", pptId);
 request.setAttribute("dept", dept);

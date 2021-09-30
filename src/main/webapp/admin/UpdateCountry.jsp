@@ -47,7 +47,7 @@ if (COUNTRY_ID < 1) {
 	return;
 }
 
-request.setAttribute("country", new CountryDAO().findCountryById(COUNTRY_ID));
+request.setAttribute("country", new CountryDao().findCountryById(COUNTRY_ID));
 %>
 
 <form method="post" name="register" action="/UpdateCountryAction">

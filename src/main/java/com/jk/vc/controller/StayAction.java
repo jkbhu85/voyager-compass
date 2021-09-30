@@ -39,10 +39,10 @@ public class StayAction extends HttpServlet {
 		String target = "/admin/EmpStay.jsp?TravelId=" + stay.getTravelId();
 		NotiMsg noti = new NotiMsg(NotiMsg.FAIL, "Error occurred while adding stay information.");
 
-		boolean status = new StayDAO().saveStay(stay);
+		boolean status = new StayDao().saveStay(stay);
 
 		if (status) {
-			int workId = new TravelMasterDAO().findTravelById(stay.getTravelId()).getWorkId();
+			int workId = new TravelMasterDao().findTravelById(stay.getTravelId()).getWorkId();
 			target = "/ViewTravelAction?workId=" + workId;
 			noti.setOk("Stay information added successfully.");
 		}

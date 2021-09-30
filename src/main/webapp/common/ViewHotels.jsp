@@ -55,9 +55,9 @@ PAGE CONTENT goes here
 	</tr></thead><tbody>
 		
 <%
-		List<Hotel> hList = new HotelDAO().findAllHotels();
-		request.setAttribute("hList", hList);
-		//request.setAttribute("countryDb", new CountryDAO());
+		List<Hotel> hList = new HotelDao().findAllHotels();
+				request.setAttribute("hList", hList);
+				//request.setAttribute("countryDb", new CountryDAO());
 		%>
 <c:forEach var="hotel" items="${hList}" varStatus="counter">
 	<tr>

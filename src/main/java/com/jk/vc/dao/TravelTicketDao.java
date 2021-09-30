@@ -1,18 +1,16 @@
 
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.*;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 import com.jk.vc.util.*;
 
-public class TravelTicketDAO extends AbstractDAO {
+public class TravelTicketDao {
 
 	private static final String SQL_INSERT_TICKET = ""
 			+ "INSERT INTO TICKETSMASTER VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -38,13 +36,11 @@ public class TravelTicketDAO extends AbstractDAO {
 
 			int rowsUpdated = pstmt.executeUpdate();
 			return (rowsUpdated > 0);
-		} catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return false;
 	}
 
 	private static final String SQL_FIND_ALL_TICKETS = ""
@@ -77,8 +73,8 @@ public class TravelTicketDAO extends AbstractDAO {
 
 				list.add(ticket);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -113,8 +109,8 @@ public class TravelTicketDAO extends AbstractDAO {
 				ticket.setJourneytime(rs.getString(12));
 				ticket.setVehicleNo(rs.getString(13));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -136,8 +132,8 @@ public class TravelTicketDAO extends AbstractDAO {
 			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

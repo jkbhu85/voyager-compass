@@ -41,8 +41,8 @@
 <%
 String emb = request.getParameter("EmbassyID");
 int embassyId = Integer.parseInt(emb);
-request.setAttribute("embassy", new EmbassyDAO().findEmbassyById(embassyId));
-request.setAttribute("cList", new CountryDAO().findAllCountries());
+request.setAttribute("embassy", new EmbassyDao().findEmbassyById(embassyId));
+request.setAttribute("cList", new CountryDao().findAllCountries());
 %>
 <form method="post" name="register" action="/UpdateEmbassyAction">
 <input type="hidden" name="EmbassyID" value="${embassy.getEmbassyID()}"><table class="form-grid">

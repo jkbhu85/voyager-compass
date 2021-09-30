@@ -111,13 +111,13 @@ $(document).ready(function(){
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
 <%
-List<Country> cList = new CountryDAO().findAllCountries();
+List<Country> cList = new CountryDao().findAllCountries();
 request.setAttribute("cList", cList);
 
 // checking if supplied passport id exist
 
 int pptId = Integer.parseInt(request.getParameter("pptId"));
-PassportDAO pptDb = new PassportDAO();
+PassportDao pptDb = new PassportDao();
 
 if (!pptDb.doesPassportExists(pptId)) {
 	NotiMsg noti = new NotiMsg(NotiMsg.FAIL, "Passport does not exist.");

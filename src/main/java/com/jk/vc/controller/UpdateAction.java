@@ -72,7 +72,7 @@ public class UpdateAction extends HttpServlet {
 			prfData.setList(new ProfileData.Address[] { home, prs });
 			prfData.setLoginId((String) request.getSession().getAttribute("user"));
 
-			boolean flag = new ProfileDAO().updateProfile(prfData);
+			boolean flag = new ProfileDao().updateProfile(prfData);
 
 			if (flag) {
 				noti.setOk("Profile updated successfully.");

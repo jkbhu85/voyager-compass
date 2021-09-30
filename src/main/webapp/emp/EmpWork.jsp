@@ -40,8 +40,8 @@
 	
 <%
 	String loginId = (String) session.getAttribute("user");
-		ProfileDAO profileDb = new ProfileDAO();
-		List<Work> wList = new WorkDAO().findAllWorksByEmployeeIdAndStatus(profileDb.findEmpIdFromLoginId(loginId), Work.STATUS_FAILED);
+		ProfileDao profileDb = new ProfileDao();
+		List<Work> wList = new WorkDao().findAllWorksByEmployeeIdAndStatus(profileDb.findEmpIdFromLoginId(loginId), Work.STATUS_FAILED);
 		request.setAttribute("wList", wList);
 	%>
 

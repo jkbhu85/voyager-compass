@@ -40,8 +40,8 @@
 <div id="formErrors" tabindex="0"></div>
 <form method="POST" action="/AddWork" name="register"><table class="form-grid">
 <%
-List<Profile> aList = new ProfileDAO().findAllAdmins();
-List<Country> cList = new CountryDAO().findAllCountries();
+List<Profile> aList = new ProfileDao().findAllAdmins();
+List<Country> cList = new CountryDao().findAllCountries();
 
 request.setAttribute("aList", aList);
 request.setAttribute("cList", cList);

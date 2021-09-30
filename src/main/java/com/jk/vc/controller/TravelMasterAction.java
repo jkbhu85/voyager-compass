@@ -37,7 +37,7 @@ public class TravelMasterAction extends HttpServlet {
 		travel.setVisaIssueDate(request.getParameter("VisaIssueDate"));
 		travel.setVisaType(request.getParameter("visaTypeId"));
 
-		TravelMasterDAO t = new TravelMasterDAO();
+		TravelMasterDao t = new TravelMasterDao();
 		System.out.println(travel);
 
 		boolean flag = t.saveTravel(travel);

@@ -1,14 +1,14 @@
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.*;
+import java.sql.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 import com.jk.vc.util.*;
 
-public class PassportDAO extends AbstractDAO {
+public class PassportDao {
 	
 	private static final String SQL_INSERT_PASSPORT = ""
 			+ "INSERT INTO PASSPORTS VALUES(?,?,?,?,?,?,?,?,?,?)";
@@ -34,9 +34,9 @@ public class PassportDAO extends AbstractDAO {
 			insertPpt.setString(col++, ppt.getComments());
 
 			status = insertPpt.executeUpdate() > 0;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogWarning(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -69,8 +69,8 @@ public class PassportDAO extends AbstractDAO {
 			pstmt.setString(8, ppt.getAddress());
 			pstmt.setString(9, ppt.getComments());
 			status = true;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -107,8 +107,8 @@ public class PassportDAO extends AbstractDAO {
 				ppt.setAddress(rs.getString(10));
 				ppt.setComments(rs.getString(11));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -131,8 +131,8 @@ public class PassportDAO extends AbstractDAO {
 
 			ResultSet rs = pstmt.executeQuery();
 			status = rs.next();
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -157,8 +157,8 @@ public class PassportDAO extends AbstractDAO {
 			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

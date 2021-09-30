@@ -37,9 +37,9 @@
 <jk:status var="status"/><%-- Status to show notification --%>
 
 <%
-List<Department> dList = new DepartmentDAO().findAllDepartments();
+List<Department> dList = new DepartmentDao().findAllDepartments();
 request.setAttribute("dList", dList);
-request.setAttribute("profileDao", new ProfileDAO());
+request.setAttribute("profileDao", new ProfileDao());
 %>
 
 <div class="page-content">

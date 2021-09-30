@@ -394,7 +394,7 @@ int workId = Integer.parseInt((String) request.getParameter("WorkId"));
 	Work work = null;
 	
 	if (workId > 0) {
-		work = new WorkDAO().get(workId);
+		work = new WorkDao().get(workId);
 	} else {
 		response.sendRedirect("/index.jsp");
 		return;
@@ -402,7 +402,7 @@ int workId = Integer.parseInt((String) request.getParameter("WorkId"));
 	
 	request.setAttribute("work", work);
 	
-	ProfileDAO prof = new ProfileDAO();
+	ProfileDao prof = new ProfileDao();
 	
 	request.setAttribute("pList", prof.findAllEmployees());
 %>
@@ -418,7 +418,7 @@ int workId = Integer.parseInt((String) request.getParameter("WorkId"));
 		<td></td>
 	<tr>
 <%
-List<VisaType> vtList = new VisaTypeDAO().findAllVisaTypesByCountryId(work.getCntId() );
+List<VisaType> vtList = new VisaTypeDao().findAllVisaTypesByCountryId(work.getCntId() );
 request.setAttribute("vtList", vtList);
 %>
 	<tr>

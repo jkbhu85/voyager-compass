@@ -51,7 +51,7 @@ String travelId = request.getParameter("TravelId");
 // forces user to come to this page with a value
 
 int id = Integer.parseInt(travelId);
-TravelMasterDAO travelDb = new TravelMasterDAO();
+TravelMasterDao travelDb = new TravelMasterDao();
 
 if (!travelDb.doesTravelExistById(id)) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);

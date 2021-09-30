@@ -1,11 +1,13 @@
 package com.jk.vc.dao;
 
+import static com.jk.vc.dao.ConnectionUtils.*;
+
 import java.sql.*;
 
-import com.jk.core.util.*;
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class StayDAO extends AbstractDAO {
+public class StayDao {
 	
 	private static final String SQL_INSERT_STAY = ""
 			+ " INSERT INTO EMPLOYEESSTAYMASTER "
@@ -31,7 +33,7 @@ public class StayDAO extends AbstractDAO {
 			boolean status1 = pstmt.executeUpdate() > 0;
 
 			PreparedStatement pwork = con.prepareStatement(SQL_UPDATE_WORK_STATUS);
-			int workId = new TravelMasterDAO().findTravelById(stay.getTravelId()).getWorkId();
+			int workId = new TravelMasterDao().findTravelById(stay.getTravelId()).getWorkId();
 			pwork.setInt(1, Work.STATUS_PREPARED);
 			pwork.setInt(2, workId);
 
@@ -46,9 +48,9 @@ public class StayDAO extends AbstractDAO {
 				con.rollback();
 			}
 
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -79,9 +81,9 @@ public class StayDAO extends AbstractDAO {
 			int count = pstmt.executeUpdate();
 
 			status = count > 0;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -113,9 +115,9 @@ public class StayDAO extends AbstractDAO {
 				stay.setRoomNo(rs.getString(4));
 				stay.setVehicleNo(rs.getString(5));
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -140,9 +142,9 @@ public class StayDAO extends AbstractDAO {
 			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

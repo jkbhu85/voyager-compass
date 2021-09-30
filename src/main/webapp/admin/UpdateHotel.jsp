@@ -42,9 +42,9 @@
 <%
 int hotelId = Integer.parseInt(request.getParameter("HotelID"));
 
-request.setAttribute("hotel", new HotelDAO().findHotelById(hotelId));
+request.setAttribute("hotel", new HotelDao().findHotelById(hotelId));
 
-List<Country> cList = new CountryDAO().findAllCountries();
+List<Country> cList = new CountryDao().findAllCountries();
 request.setAttribute("cList", cList);
 %>
 

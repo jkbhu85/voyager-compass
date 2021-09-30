@@ -1,17 +1,17 @@
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.LoggerManager;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class WorkDAO extends AbstractDAO {	
+public class WorkDao {
 
-	private static final String SQL_INSERT_INTO_WORK = "INSERT INTO WORKS VALUES(?, ?, ?, ?, ?, ?)";
+	private static final String SQL_INSERT_INTO_WORK = ""
+			+ "INSERT INTO WORKS VALUES(?, ?, ?, ?, ?, ?)";
 
 	public boolean insertWork(Work work) {
 		Connection con = null;
@@ -29,13 +29,11 @@ public class WorkDAO extends AbstractDAO {
 			ps.setInt(col++, work.getStatusId());
 
 			return ps.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return false;
 	}
 
 	private static final String SQL_UPDATE_WORK = ""
@@ -52,13 +50,11 @@ public class WorkDAO extends AbstractDAO {
 			ps.setInt(3, workId);
 
 			return ps.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return false;
 	}
 
 	private static final String SQL_FIND_WORK_BY_ID = ""
@@ -98,8 +94,8 @@ public class WorkDAO extends AbstractDAO {
 				work.setCntName(rs.getString("CNT_NAME"));
 				return work;
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -146,8 +142,8 @@ public class WorkDAO extends AbstractDAO {
 				list.add(work);
 			}
 
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -196,8 +192,8 @@ public class WorkDAO extends AbstractDAO {
 
 				list.add(work);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -249,8 +245,8 @@ public class WorkDAO extends AbstractDAO {
 
 				list.add(work);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -322,8 +318,8 @@ public class WorkDAO extends AbstractDAO {
 				list.add(work);
 			}
 
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -348,8 +344,8 @@ public class WorkDAO extends AbstractDAO {
 				status = true;
 			}
 
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -373,8 +369,8 @@ public class WorkDAO extends AbstractDAO {
 			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

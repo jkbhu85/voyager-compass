@@ -42,7 +42,7 @@
 <%
 String vtId = request.getParameter("VisaTypeID");
 int visaTypeId = Integer.parseInt(vtId);
-VisaType visaType = new VisaTypeDAO().getVisaType(visaTypeId);
+VisaType visaType = new VisaTypeDao().getVisaType(visaTypeId);
 
 if (visaType == null) {
 	NotiMsg noti = new NotiMsg(NotiMsg.FAIL, "Invalid Visa Type.");
@@ -50,8 +50,8 @@ if (visaType == null) {
 	response.sendRedirect("/common/ViewVisaTypes.jsp");
 	return;
 }
-request.setAttribute("cList", new CountryDAO().findAllCountries());
-request.setAttribute("visaType", new VisaTypeDAO().getVisaType(visaTypeId));
+request.setAttribute("cList", new CountryDao().findAllCountries());
+request.setAttribute("visaType", new VisaTypeDao().getVisaType(visaTypeId));
 %>
 
 <form method="post" name="register" action="/UpdateVisaTypeAction">

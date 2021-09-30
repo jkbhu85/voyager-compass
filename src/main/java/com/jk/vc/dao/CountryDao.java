@@ -1,18 +1,19 @@
 package com.jk.vc.dao;
 
+import static com.jk.vc.dao.ConnectionUtils.*;
+
 import java.sql.*;
 import java.util.*;
 
-import com.jk.core.util.*;
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class CountryDAO extends AbstractDAO {
+public class CountryDao {
 
 	private static final String SQL_INSERT_COUNTRY = ""
 			+ "INSERT INTO COUNTRIES_MASTER VALUES(?,?,?,?)";
 
 	public boolean insertCountry(Country country) {
-		boolean flag = false;
 		Connection con = null;
 		try {
 			con = getConnection();
@@ -24,18 +25,13 @@ public class CountryDAO extends AbstractDAO {
 			pstmt.setString(col++, country.getCountryDesc());
 			pstmt.setString(col++, country.getNationality());
 
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) {
-				flag = true;
-			}
-		} catch (Exception e) {
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogWarning(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return flag;
 	}
 
 	
@@ -45,7 +41,6 @@ public class CountryDAO extends AbstractDAO {
 			+ " WHERE CNT_ID=?";
 
 	public boolean updateCountry(Country country) {
-		boolean flag = false;
 		Connection con = null;
 
 		try {
@@ -58,18 +53,13 @@ public class CountryDAO extends AbstractDAO {
 			pstmt.setString(4, country.getNationality());
 			pstmt.setInt(5, country.getCountryID());
 
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) {
-				flag = true;
-			}
-		} catch (Exception e) {
+			return pstmt.executeUpdate() > 0;
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogWarning(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return flag;
 	}
 
 	private static final String SQL_FIND_ALL_COUNTRIES = ""
@@ -94,8 +84,8 @@ public class CountryDAO extends AbstractDAO {
 
 				list.add(country);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -123,8 +113,8 @@ public class CountryDAO extends AbstractDAO {
 				country.setNationality(rs.getString(5));
 				return country;
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

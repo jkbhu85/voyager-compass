@@ -33,7 +33,7 @@ public class LoginAction extends HttpServlet {
 			rb.setLoginID(username);
 			rb.setPassword(pass);
 
-			String role = new SecurityDAO().loginCheck(rb);
+			String role = new SecurityDao().loginCheck(rb);
 
 			if (role != null && role.length() > 0) {
 				session.setAttribute("user", username);

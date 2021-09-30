@@ -1,13 +1,15 @@
 package com.jk.vc.dao;
 
+import static com.jk.vc.dao.ConnectionUtils.*;
+
 import java.sql.*;
 import java.util.*;
 
-import com.jk.core.util.*;
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 import com.jk.vc.util.*;
 
-public class TravelMasterDAO extends AbstractDAO {
+public class TravelMasterDao {
 
 	private static final String SQL_INSERT_TRAVEL = ""
 			+ "INSERT INTO TRAVELMASTER VALUES(TRAVEL_ID_SEQ.NEXTVAL,?,?,?,?,?)";
@@ -45,7 +47,7 @@ public class TravelMasterDAO extends AbstractDAO {
 
 			if (visaTypeId > 0) {
 				PreparedStatement psVisa = con.prepareStatement(SQL_UPDATE_VISA);
-				int pptId = new PassportDAO().findPassportIdByEmployeeId(travel.getEmpId());
+				int pptId = new PassportDao().findPassportIdByEmployeeId(travel.getEmpId());
 				psVisa.setInt(1, pptId);
 				psVisa.setInt(2, visaTypeId);
 				psVisa.setString(3, travel.getVisaIssueDate());
@@ -65,9 +67,9 @@ public class TravelMasterDAO extends AbstractDAO {
 				con.rollback();
 			}
 
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogWarning(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -91,8 +93,8 @@ public class TravelMasterDAO extends AbstractDAO {
 			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		}
 
 		return 0;
@@ -123,8 +125,8 @@ public class TravelMasterDAO extends AbstractDAO {
 
 				list.add(travel);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -155,8 +157,8 @@ public class TravelMasterDAO extends AbstractDAO {
 				travel.setInst(rs.getString("INSTRUCTIONS"));
 				travel.setWorkId(rs.getInt("WORKID"));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -178,11 +180,10 @@ public class TravelMasterDAO extends AbstractDAO {
 
 			ResultSet rs = ps.executeQuery();
 			return rs.next();
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return false;
 	}
 }

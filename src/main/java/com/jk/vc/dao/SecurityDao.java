@@ -1,14 +1,13 @@
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.LoggerManager;
+import java.sql.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class SecurityDAO extends AbstractDAO {
+public class SecurityDao {
 
 	private static final String SQL_FIND_USER_ROLE_BY_LOGIN_ID_AND_PASSWORD = ""
 			+ "SELECT TYPE FROM EMPLOYEEMASTER WHERE LOGINID=? AND PASSWORD=?";
@@ -27,8 +26,8 @@ public class SecurityDAO extends AbstractDAO {
 				return rs.getString(1);
 			}
 
-		} catch (SQLException ex) {
-			LoggerManager.writeLogSevere(ex);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -61,9 +60,9 @@ public class SecurityDAO extends AbstractDAO {
 			else {
 				con.rollback();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -95,9 +94,9 @@ public class SecurityDAO extends AbstractDAO {
 				con.rollback();
 			}
 
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			DaoUtils.rollback(con);
-			LoggerManager.writeLogSevere(e);
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -124,8 +123,8 @@ public class SecurityDAO extends AbstractDAO {
 					return rs.getString(1);
 				}
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -149,8 +148,8 @@ public class SecurityDAO extends AbstractDAO {
 				System.out.println("loginid alredy exist" + userName);
 				return rs.getString(1);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

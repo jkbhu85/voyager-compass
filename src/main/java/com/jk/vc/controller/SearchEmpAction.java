@@ -1,19 +1,12 @@
 package com.jk.vc.controller;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
 
 import com.jk.vc.dao.*;
 import com.jk.vc.model.*;
@@ -87,7 +80,7 @@ public class SearchEmpAction extends HttpServlet {
 
 	private StringBuilder getData(String startDateStr, String endDateStr)
 			throws SQLException {
-		Connection con = new AbstractDAO().getConnection();
+		Connection con = ConnectionUtils.getConnection();
 
 		String sql = "" +
 				" select e.employeeid, e.FIRSTNAME|| ' '|| e.LASTNAME \"name\",  " +
@@ -130,7 +123,7 @@ public class SearchEmpAction extends HttpServlet {
 
 	private StringBuilder getDataWithPassport(String startDateStr, String endDateStr)
 			throws SQLException {
-		Connection con = new AbstractDAO().getConnection();
+		Connection con = ConnectionUtils.getConnection();
 
 		String sql = "" +
 				" select e.employeeid, e.FIRSTNAME|| ' '|| e.LASTNAME \"name\",  " +
@@ -179,7 +172,7 @@ public class SearchEmpAction extends HttpServlet {
 
 	private StringBuilder getDataWithVisa(int visaType, String startDateStr, String endDateStr)
 			throws SQLException {
-		Connection con = new AbstractDAO().getConnection();
+		Connection con = ConnectionUtils.getConnection();
 
 		String sql = "" +
 				" select e.employeeid, e.FIRSTNAME|| ' '|| e.LASTNAME \"name\",  " +

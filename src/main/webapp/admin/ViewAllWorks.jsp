@@ -39,9 +39,9 @@
 <div class="page-content">
 	
 <%
-	List<Work> wList = new WorkDAO().findAllWorks();
+	List<Work> wList = new WorkDao().findAllWorks();
 
-	request.setAttribute("wList", wList);
+		request.setAttribute("wList", wList);
 	%>
 
 <table class="data-grid"><thead>

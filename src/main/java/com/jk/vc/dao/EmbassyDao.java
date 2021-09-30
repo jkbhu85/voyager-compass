@@ -1,17 +1,15 @@
 
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.LoggerManager;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class EmbassyDAO extends AbstractDAO {
+public class EmbassyDao {
 	
 	private static final String SQL_INSERT_EMBASSY = ""
 			+ "INSERT INTO FORIGNEMBASSYMASTER VALUES(?,?,?,?,?)";
@@ -38,8 +36,8 @@ public class EmbassyDAO extends AbstractDAO {
 			else {
 				con.rollback();
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -73,8 +71,8 @@ public class EmbassyDAO extends AbstractDAO {
 			else {
 				con.rollback();
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -111,8 +109,8 @@ public class EmbassyDAO extends AbstractDAO {
 
 				list.add(embassy);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -138,8 +136,8 @@ public class EmbassyDAO extends AbstractDAO {
 				embassy.setEmbassyContactPerson(rs.getString(5));
 				embassy.setPhoneNo(rs.getString(6));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

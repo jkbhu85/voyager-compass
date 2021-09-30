@@ -51,7 +51,7 @@ public class AddVisaAction extends HttpServlet {
 
 		System.out.println(visa);
 
-		boolean status = new VisaDAO().insertVisa(visa);
+		boolean status = new VisaDao().insertVisa(visa);
 		String target = "/admin/AddVisa.jsp?pptId=" + visa.getPptId();
 
 		if (status) {

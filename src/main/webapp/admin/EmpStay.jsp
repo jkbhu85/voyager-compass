@@ -41,15 +41,15 @@
 
 <%
 int tid = Integer.parseInt((String) request.getParameter("TravelId"));
-Travel travel = new TravelMasterDAO().findTravelById(tid);
+Travel travel = new TravelMasterDao().findTravelById(tid);
 
 if (travel == null) {
 	request.getRequestDispatcher("/index.jsp").forward(request, response);
 	return;
 }
 
-Work work = new WorkDAO().get(travel.getWorkId());
-List<Hotel> hList = new HotelDAO().getHotelsByCountryId(work.getCntId());
+Work work = new WorkDao().get(travel.getWorkId());
+List<Hotel> hList = new HotelDao().getHotelsByCountryId(work.getCntId());
 request.setAttribute("travel", travel);
 request.setAttribute("work", work);
 request.setAttribute("hList", hList);

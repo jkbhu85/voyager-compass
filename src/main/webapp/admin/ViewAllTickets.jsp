@@ -51,9 +51,9 @@
 	</tr></thead><tbody>
 		
 <%
-		List<TravelTicket> tList = new TravelTicketDAO().findAllTickets();
-		request.setAttribute("tList", tList);
-		request.setAttribute("profile", new ProfileDAO());
+		List<TravelTicket> tList = new TravelTicketDao().findAllTickets();
+				request.setAttribute("tList", tList);
+				request.setAttribute("profile", new ProfileDao());
 		%>
 <c:forEach var="ticket" items="${tList}">
 	<tr>

@@ -35,7 +35,7 @@ public class UpdateEmbassyAction extends HttpServlet {
 		embassy.setPhoneNo(request.getParameter("PhoneNo"));
 		embassy.setCountryID(Integer.parseInt(request.getParameter("CountryID")));
 
-		boolean flag = new EmbassyDAO().updateEmbassy(embassy);
+		boolean flag = new EmbassyDao().updateEmbassy(embassy);
 		String target = "/admin/UpdateEmbassy.jsp?EmbassyID=" + embassy.getEmbassyID();
 
 		if (flag) {

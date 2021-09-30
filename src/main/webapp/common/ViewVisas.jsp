@@ -42,10 +42,10 @@
 <div id="formErrors" tabindex="0"></div>
 
 <%
-VisaDAO visaDb = new VisaDAO();
-PassportDAO pptDb = new PassportDAO();
-ProfileDAO profileDb = new ProfileDAO();
-DepartmentDAO deptDb = new DepartmentDAO();
+VisaDao visaDb = new VisaDao();
+PassportDao pptDb = new PassportDao();
+ProfileDao profileDb = new ProfileDao();
+DepartmentDao deptDb = new DepartmentDao();
 
 request.setAttribute("visaDb", visaDb);
 request.setAttribute("pptDb", pptDb);

@@ -39,7 +39,7 @@ public class EmpWorkDescAction extends HttpServlet {
 		work.setCntId(Integer.parseInt(request.getParameter("CountryID")));
 		work.setStatusId(Work.STATUS_UNPREPARED);
 
-		boolean flag = new WorkDAO().insertWork(work);
+		boolean flag = new WorkDao().insertWork(work);
 
 		if (flag) {
 			noti.setOk("Work description added successfully.");

@@ -45,7 +45,7 @@
 
 <div class="page-content">
 <%
-ProfileDAO profileDb = new ProfileDAO();
+ProfileDao profileDb = new ProfileDao();
 Profile emp = null;
 
 String userId = (String) request.getSession().getAttribute("user");

@@ -45,7 +45,7 @@ String name = (String) session.getAttribute("user");
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
 
-Profile prs = new ProfileDAO().findProfile(name, path);
+Profile prs = new ProfileDao().findProfile(name, path);
 request.setAttribute("prs", prs);
 %>
 <div class="form-wrapper">

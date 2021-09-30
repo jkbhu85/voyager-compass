@@ -40,8 +40,8 @@
 <div id="formErrors" tabindex="0"></div>
 
 <%
-request.setAttribute("cList", new CountryDAO().findAllCountries());
-request.setAttribute("vtList", new VisaTypeDAO().getVisaTypeList());
+request.setAttribute("cList", new CountryDao().findAllCountries());
+request.setAttribute("vtList", new VisaTypeDao().getVisaTypeList());
 %>
 
 <form method="post" name="register" action=""><table class="form-grid">

@@ -37,7 +37,7 @@ public class UpdateVisaTypeAction extends HttpServlet {
 		visaType.setStampGuide(request.getParameter("StampGuide"));
 		visaType.setReqAdv(Integer.parseInt(request.getParameter("ReqAdv")));
 
-		boolean flag = new VisaTypeDAO().updateVisaType(visaType);
+		boolean flag = new VisaTypeDao().updateVisaType(visaType);
 		String target = "/admin/UpdateVisaType.jsp?VisaTypeID=" + visaType.getVisaTypeID();
 
 		if (flag) {

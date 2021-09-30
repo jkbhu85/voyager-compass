@@ -1,21 +1,19 @@
 
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.LoggerManager;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 
-public class DepartmentDAO extends AbstractDAO {
+public class DepartmentDao {
 	
 	private static final String SQL_INSERT_DEPARTMENT = ""
-			+ " INSERT INTO DEPARTMENTMASTER ("
-			+ "   DEPARTMENTNAME, DEPARTMENTABBR, DEPARTMENTINCHGID"
+			+ " INSERT INTO DEPARTMENTMASTER ( "
+			+ "   DEPARTMENTNAME, DEPARTMENTABBR, DEPARTMENTINCHGID "
 			+ " ) VALUES(?,?,?)";
 
 	public boolean insertDept(Department dept) {
@@ -34,12 +32,11 @@ public class DepartmentDAO extends AbstractDAO {
 			pstmt.setObject(col++, inchargeId);
 
 			return pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return false;
 	}
 
 
@@ -64,12 +61,11 @@ public class DepartmentDAO extends AbstractDAO {
 			pstmt.setInt(4, dept.getDepartmentID());
 
 			return pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-		return false;
 	}
 
 	private static final String SQL_FIND_ALL_DEPARTMENTS = ""
@@ -92,8 +88,8 @@ public class DepartmentDAO extends AbstractDAO {
 
 				list.add(dept);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -118,8 +114,8 @@ public class DepartmentDAO extends AbstractDAO {
 				dept.setDepartmentInChgID(rs.getInt(4));
 				return dept;
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}

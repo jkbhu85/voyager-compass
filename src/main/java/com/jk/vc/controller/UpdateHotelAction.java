@@ -40,7 +40,7 @@ public class UpdateHotelAction extends HttpServlet {
 
 		String target = "/admin/UpdateHotel.jsp?HotelID=" + hotel.getHotelID();
 
-		boolean flag = new HotelDAO().updateHotel(hotel);
+		boolean flag = new HotelDao().updateHotel(hotel);
 
 		if (flag) {
 			target = "/common/ViewHotels.jsp";

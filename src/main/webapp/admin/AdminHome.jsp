@@ -37,10 +37,10 @@
 <%
 String loginId = (String) session.getAttribute("user"); 
 @SuppressWarnings("deprecation")
-Profile profile = new ProfileDAO().findProfile(loginId, request.getRealPath("/userimages"));
+Profile profile = new ProfileDao().findProfile(loginId, request.getRealPath("/userimages"));
 
 String name = profile.getFirstName() + " " + profile.getLastName();
-WorkDAO workDb = new WorkDAO();
+WorkDao workDb = new WorkDao();
 List<Work> wList = workDb.findAllWorksByEmployeeIdAndStatus(profile.getEmpid(), Work.STATUS_PREPARED);
 
 request.setAttribute("wList", wList);

@@ -45,10 +45,10 @@ public class TravelTicketAction extends HttpServlet {
 		ticket.setJourneytime(request.getParameter("journeyTime"));
 		ticket.setVehicleNo(request.getParameter("vehicleNo"));
 
-		boolean flag = new TravelTicketDAO().insertTicket(ticket);
+		boolean flag = new TravelTicketDao().insertTicket(ticket);
 
 		if (flag) {
-			int workId = new TravelMasterDAO().findTravelById(ticket.getTravelID()).getWorkId();
+			int workId = new TravelMasterDao().findTravelById(ticket.getTravelID()).getWorkId();
 			target = "/ViewTravelAction?workId=" + workId;
 			noti.setOk("Ticket addedd successfully.");
 		}

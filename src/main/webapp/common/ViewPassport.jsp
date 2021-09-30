@@ -43,7 +43,7 @@
 
 <%
 int empId = Integer.parseInt(request.getParameter("empId"));
-ProfileDAO profileDb = new ProfileDAO();
+ProfileDao profileDb = new ProfileDao();
 
 if (!profileDb.doesProfileIdExists(empId)) {
 	request.getSession().setAttribute("status", new NotiMsg(NotiMsg.FAIL, "Employee does not exist."));
@@ -59,7 +59,7 @@ if ("employee".equals(role) && !loginId.equals(profileDb.findLoginIdByEmployeeId
 	return;
 }
 
-PassportDAO pptDb = new PassportDAO();
+PassportDao pptDb = new PassportDao();
 int pptId = pptDb.findPptIdFromEmp(empId);
 
 Passport ppt = pptDb.findPassportById(pptId);
@@ -76,10 +76,10 @@ loginId = profileDb.findLoginIdByEmployeeId(empId);
 Profile profile = profileDb.findProfile(loginId, path);
 request.setAttribute("profile", profile);
 
-Department dept = new DepartmentDAO().findDeptatmentById(profile.getDeptID());
+Department dept = new DepartmentDao().findDeptatmentById(profile.getDeptID());
 request.setAttribute("dept", dept);
 
-request.setAttribute("visaDb", new VisaDAO());
+request.setAttribute("visaDb", new VisaDao());
 %>
 
 <table class="profile-grid">

@@ -10,7 +10,7 @@ import com.jk.vc.dao.*;
 @WebInitParam(name = "config", value = "/WEB-INF/config/system.properties")
 public class InitServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	AbstractDAO dobject;
+	ConnectionUtils dobject;
 
 
 	@Override

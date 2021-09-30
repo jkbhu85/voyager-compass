@@ -20,7 +20,7 @@ public class ChekUserAction extends HttpServlet {
 		String target = "Registerform.jsp?status1=Invalid username and password";
 		try {
 
-			String user = new SecurityDAO().doesLoginIdExist(username);
+			String user = new SecurityDao().doesLoginIdExist(username);
 
 			if (user.equals(null)) {
 				target = "Registerform.jsp?status1=<font color=green>Available</font>";

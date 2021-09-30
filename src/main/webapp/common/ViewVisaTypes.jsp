@@ -46,7 +46,7 @@
 		<th><div>Type Description</div></th>
 	</tr></thead><tbody>
 <%
-List<VisaType> vtList = new VisaTypeDAO().getVisaTypeList();
+List<VisaType> vtList = new VisaTypeDao().getVisaTypeList();
 request.setAttribute("vtList", vtList);
 %>
 

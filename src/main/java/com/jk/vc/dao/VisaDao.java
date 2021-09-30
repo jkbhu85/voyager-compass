@@ -1,18 +1,15 @@
 package com.jk.vc.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
+import static com.jk.vc.dao.ConnectionUtils.*;
 
-import com.jk.core.util.*;
+import java.sql.*;
+import java.util.*;
+
+import com.jk.vc.exception.*;
 import com.jk.vc.model.*;
 import com.jk.vc.util.*;
 
-
-public class VisaDAO extends AbstractDAO {
+public class VisaDao {
 	
 	private static final String SQL_INSERT_VISA = ""
 			+ "INSERT INTO EMP_VISAS VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -41,13 +38,11 @@ public class VisaDAO extends AbstractDAO {
 			pstmt.setString(col++, visa.getVisaCost());
 
 			return pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return false;
 	}
 
 	
@@ -79,13 +74,11 @@ public class VisaDAO extends AbstractDAO {
 			pstmt.setInt(13, visa.getVisaId());
 
 			return pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return false;
 	}
 
 
@@ -135,8 +128,8 @@ public class VisaDAO extends AbstractDAO {
 				visa.setCancelDate(rs.getString(13));
 				visa.setEmpId(rs.getInt(14));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -202,8 +195,8 @@ public class VisaDAO extends AbstractDAO {
 
 				list.add(visa);
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -266,8 +259,8 @@ public class VisaDAO extends AbstractDAO {
 				visa.setCancelDate(rs.getString(13));
 				visa.setEmpId(rs.getInt(14));
 			}
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
@@ -288,14 +281,11 @@ public class VisaDAO extends AbstractDAO {
 
 			ResultSet rs = queryVisa.executeQuery();
 			return rs.next();
-		} catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return false;
 	}
 
 	private static final String SQL_FIND_VISA_ID_BY_PASSPORT_ID = ""
@@ -311,12 +301,10 @@ public class VisaDAO extends AbstractDAO {
 
 			ResultSet rs = queryVisa.executeQuery();
 			return rs.getInt(1);
-		} catch (Exception e) {
-			LoggerManager.writeLogSevere(e);
+		} catch (SQLException e) {
+			throw new VcDataAccessException(e);
 		} finally {
 			DaoUtils.closeCon(con);
 		}
-
-		return 0;
 	}
 }

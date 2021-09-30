@@ -52,7 +52,7 @@ public class UpdateVisaAction extends HttpServlet {
 
 		visa.setVisaCost(request.getParameter("cost"));
 
-		boolean status = new VisaDAO().insertVisa(visa);
+		boolean status = new VisaDao().insertVisa(visa);
 		String target = "/admin/UpdateVisa.jsp?visaId=" + visa.getVisaId();
 
 		if (status) {

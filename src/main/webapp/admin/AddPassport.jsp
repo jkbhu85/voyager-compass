@@ -45,13 +45,13 @@
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
 <%
-List<Country> cList = new CountryDAO().findAllCountries();
+List<Country> cList = new CountryDao().findAllCountries();
 request.setAttribute("cList", cList);
 
 String eId = request.getParameter("empId");
 Integer empId = Integer.parseInt(eId);
 
-ProfileDAO profileDb = new ProfileDAO();
+ProfileDao profileDb = new ProfileDao();
 String loginId = profileDb.findLoginIdByEmployeeId(empId);
 
 if (loginId == null) {

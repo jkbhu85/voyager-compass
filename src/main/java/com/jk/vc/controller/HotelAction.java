@@ -37,7 +37,7 @@ public class HotelAction extends HttpServlet {
 		hotel.setMaxCharge(Integer.parseInt(request.getParameter("MaxCharge")));
 		hotel.setCountryID(Integer.parseInt(request.getParameter("CountryID")));
 
-		boolean flag = new HotelDAO().insertHotel(hotel);
+		boolean flag = new HotelDao().insertHotel(hotel);
 
 		if (flag) {
 			noti.setOk("Hotel added successfully.");

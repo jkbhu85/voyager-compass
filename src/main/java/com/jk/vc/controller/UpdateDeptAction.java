@@ -34,7 +34,7 @@ public class UpdateDeptAction extends HttpServlet {
 		dept.setDepartmentAbbr(request.getParameter("DeptAbbr"));
 		dept.setDepartmentInChgID(Integer.parseInt(request.getParameter("EmpID")));
 
-		boolean flag = new DepartmentDAO().updateDept(dept);
+		boolean flag = new DepartmentDao().updateDept(dept);
 
 		if (flag) {
 			target = "/common/ViewDepartments.jsp";

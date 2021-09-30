@@ -38,7 +38,7 @@ public class UpdateWrokAction extends HttpServlet {
 			return;
 		}
 
-		result = new WorkDAO().updateWork(workId, status, desc);
+		result = new WorkDao().updateWork(workId, status, desc);
 		String target = "/admin/UpdateWork?workId=?" + workId;
 
 		if (result) {

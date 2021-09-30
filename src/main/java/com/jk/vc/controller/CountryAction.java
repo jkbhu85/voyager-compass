@@ -34,7 +34,7 @@ public class CountryAction extends HttpServlet {
 		country.setCountryDesc(request.getParameter("countryDesc"));
 		country.setNationality(request.getParameter("nationality"));
 
-		boolean flag = new CountryDAO().insertCountry(country);
+		boolean flag = new CountryDao().insertCountry(country);
 
 		if (flag) {
 			target = "/common/ViewCountries.jsp";

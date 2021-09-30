@@ -43,7 +43,7 @@
 
 <%
 int workId = Integer.parseInt(request.getParameter("workId"));
-Work work = new WorkDAO().get(workId);
+Work work = new WorkDao().get(workId);
 
 if (work == null) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);

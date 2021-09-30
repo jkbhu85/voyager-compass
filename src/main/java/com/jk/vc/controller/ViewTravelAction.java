@@ -22,7 +22,7 @@ public class ViewTravelAction extends HttpServlet {
 		String target = "/common/ViewTravelPlan.jsp";
 
 		int workId = Integer.parseInt(request.getParameter("workId"));
-		Work work = new WorkDAO().get(workId);
+		Work work = new WorkDao().get(workId);
 
 		if (work == null) {
 			response.sendRedirect("/NotFound.jsp");
@@ -31,12 +31,12 @@ public class ViewTravelAction extends HttpServlet {
 
 		request.setAttribute("work", work);
 
-		TravelMasterDAO tm = new TravelMasterDAO();
+		TravelMasterDao tm = new TravelMasterDao();
 		Travel travel = tm.findTravelById(tm.findTravelIdByWorkId(work.getWorkId()));
 
 		if (travel != null) {
-			TravelTicketDAO ttd = new TravelTicketDAO();
-			StayDAO sdao = new StayDAO();
+			TravelTicketDao ttd = new TravelTicketDao();
+			StayDao sdao = new StayDao();
 
 			String ticketId = ttd.getTicketIdFromTravel(travel.getTravelId()) + "";
 			TravelTicket ticket = ttd.findTicketById(ticketId);
@@ -44,7 +44,7 @@ public class ViewTravelAction extends HttpServlet {
 			int stayId = sdao.getStayIdFromTravel(travel.getTravelId() + "");
 			Stay stay = sdao.findStayById(stayId);
 
-			ProfileDAO profileDb = new ProfileDAO();
+			ProfileDao profileDb = new ProfileDao();
 			@SuppressWarnings("deprecation")
 			Profile emp = profileDb.findProfile(profileDb.findLoginIdByEmployeeId(travel.getEmpId()),
 					request.getRealPath("/userimages"));
@@ -55,11 +55,11 @@ public class ViewTravelAction extends HttpServlet {
 			request.setAttribute("stay", stay);
 
 			if (stay != null) {
-				request.setAttribute("hotel", new HotelDAO().findHotelById(stay.getHotelId()));
+				request.setAttribute("hotel", new HotelDao().findHotelById(stay.getHotelId()));
 			}
 
 			if (emp != null) {
-				request.setAttribute("dept", new DepartmentDAO().findDeptatmentById(emp.getDeptID()));
+				request.setAttribute("dept", new DepartmentDao().findDeptatmentById(emp.getDeptID()));
 			}
 		}
 

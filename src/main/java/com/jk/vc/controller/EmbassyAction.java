@@ -35,7 +35,7 @@ public class EmbassyAction extends HttpServlet {
 		embassy.setPhoneNo(request.getParameter("PhoneNo"));
 		embassy.setCountryID(Integer.parseInt(request.getParameter("CountryID")));
 
-		boolean flag = new EmbassyDAO().insertEmbassy(embassy);
+		boolean flag = new EmbassyDao().insertEmbassy(embassy);
 
 		if (flag) {
 			target = "/common/ViewEmbassies.jsp";
