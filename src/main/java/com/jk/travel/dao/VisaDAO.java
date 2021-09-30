@@ -11,19 +11,19 @@ import com.jk.core.util.DateWrapper;
 import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Visa;
 
+
 public class VisaDAO extends AbstractDAO {
-	public boolean addVisa(Visa visa) {
-		boolean status = false;
+	
+	private static final String SQL_INSERT_VISA = ""
+			+ "INSERT INTO EMP_VISAS VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+	
+	public boolean insertVisa(Visa visa) {
 		Connection con = null;
 
 		try {
-			// int visaId = getSequenceID("Emp_Visas", "ev_id");
-
 			con = getConnection();
-			String sql = "INSERT INTO Emp_Visas VALUES (VISA_ID_SEQ.nextval,?,?,?,?,?,?,?,?,?,?,?,?)";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_VISA);
 
-			// pstmt.setInt(1, visaId);
 			int col = 1;
 			pstmt.setInt(col++, visa.getPptId());
 			pstmt.setInt(col++, visa.getVisaTypeId());
@@ -34,44 +34,36 @@ public class VisaDAO extends AbstractDAO {
 			pstmt.setInt(col++, visa.getVisitCount());
 			pstmt.setString(col++, visa.getPlaceIssued());
 			pstmt.setString(col++, visa.getComments());
-			// setting the followint two because if a visa is being
+			// setting the follow int two because if a visa is being
 			// added then it would not be a cancelled visa
 			pstmt.setInt(col++, 0); // visa cancel status
 			pstmt.setNull(col++, Types.DATE); // visa cancel date
 			pstmt.setString(col++, visa.getVisaCost());
 
-			status = pstmt.executeUpdate() > 0;
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return status;
+		return false;
 	}
 
+	
+	private static final String SQL_UPDATE_VISA = ""
+			+ " UPDATE EMP_VISAS PPT_EV_FK=?, VT_EV_FK=?, EV_NUMBER=?, "
+			+ " EV_ISSUE_DATE=?, EV_EXPIRE_DATE=?, EV_EXPIRE_DATE=?, EV_VISIT_COUNT=?, "
+			+ " EV_PLACE_OF_ISSUE=?, EV_COMMENTS=?, EV_CANCEL_STATUS=?, "
+			+ " EV_CANCEL_DATE=?, EV_COST=? WHERE EV_ID=?";
 
 	public boolean updateVisa(Visa visa) {
-		boolean status = false;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "UPDATE Emp_Visas ppt_ev_fk=?, vt_ev_fk=?, ev_number=?, "
-					+ " ev_issue_date=?, ev_expire_date=?, ev_expire_date=?, ev_visit_count=?, "
-					+ " ev_place_of_issue=?, ev_comments=?, ev_cancel_status=?, "
-					+ " ev_cancel_date=?, ev_cost=? WHERE ev_id=?";
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_VISA);
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
-
-			pstmt.setInt(13, visa.getVisaId());
 			pstmt.setInt(1, visa.getPptId());
 			pstmt.setInt(2, visa.getVisaTypeId());
 			pstmt.setString(3, visa.getVisaNo());
@@ -84,25 +76,27 @@ public class VisaDAO extends AbstractDAO {
 			pstmt.setInt(10, visa.getCancelStatus());
 			pstmt.setString(11, DateWrapper.parseDate(visa.getCancelDate()));
 			pstmt.setString(12, visa.getVisaCost());
+			pstmt.setInt(13, visa.getVisaId());
 
-			status = pstmt.executeUpdate() > 0;
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return status;
+		return false;
 	}
 
 
+	private static final String SQL_FIND_VISA_BY_ID = ""
+			+ " SELECT "
+			+ "   EV.*, PP.EMP_PPT_FK "
+			+ " FROM "
+			+ "   EMP_VISAS EV "
+			+ "   INNER JOIN PASSPORTS PP "
+			+ "     ON EV.PPT_EV_FK = PP.PPT_ID "
+			+ " WHERE EV.EV_ID=?";
 	/**
 	 * Returns an instance of {@link Visa} if data exist for the specified visa
 	 * id {@code null} otherwise
@@ -112,22 +106,19 @@ public class VisaDAO extends AbstractDAO {
 	 * @return an instance of {@link Visa} if data exist for the specified visa
 	 *         id {@code null} otherwise.
 	 */
-	public Visa getVisa(int visaId) {
+	public Visa findVisaById(int visaId) {
 		Connection con = null;
-		Visa visa = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ev.*,pp.emp_ppt_fk FROM Emp_Visas ev INNER JOIN Passports pp ON "
-					+ " ev.ppt_ev_fk = pp.ppt_id WHERE ev.ev_id=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_VISA_BY_ID);
 			pstmt.setInt(1, visaId);
 
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
-				visa = new Visa();
+				Visa visa = new Visa();
 
 				visa.setVisaId(rs.getInt(1));
 				visa.setPptId(rs.getInt(2));
@@ -144,23 +135,31 @@ public class VisaDAO extends AbstractDAO {
 				visa.setCancelDate(rs.getString(13));
 				visa.setEmpId(rs.getInt(14));
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return visa;
+		return null;
 	}
-
+	
+	private static final String SQL_FIND_ALL_VISAS_BY_PASSPORT_ID = ""
+			+ " SELECT "
+			+ "   EV.*,PP.EMP_PPT_FK,VT.VT_ABBR,CM.CNT_NAME "
+			+ " FROM "
+			+ "   EMP_VISAS EV "
+			+ "   INNER JOIN PASSPORTS PP "
+			+ "     ON EV.PPT_EV_FK = PP.PPT_ID "
+			+ "   INNER JOIN VISA_TYPES VT "
+			+ "     ON VT.VT_ID = EV.VT_EV_FK "
+			+ "   INNER JOIN COUNTRIES_MASTER CM "
+			+ "     ON CM.CNT_ID = VT.CNT_VT_FK "
+			+ " WHERE "
+			+ "   EV.PPT_EV_FK=? "
+			+ " ORDER BY "
+			+ "   CM.CNT_NAME ASC, "
+			+ "   EV.EV_ISSUE_DATE DESC ";
 
 	/**
 	 * Returns a list of all visas associated with the specified passport id.
@@ -170,23 +169,13 @@ public class VisaDAO extends AbstractDAO {
 	 *            passport id for which to search the data
 	 * @return list of all visas associated with the specified passport id
 	 */
-	public List<Visa> getPptVisas(int pptId) {
+	public List<Visa> findAllVisasByPassportId(int pptId) {
 		List<Visa> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ev.*,pp.emp_ppt_fk FROM Emp_Visas ev INNER JOIN Passports pp ON "
-					+ " ev.ppt_ev_fk = pp.ppt_id WHERE ev.ppt_ev_fk=? order by ev.ev_issue_date desc";
-
-			String sql1 = " SELECT ev.*,pp.emp_ppt_fk,vt.vt_abbr,cm.cnt_name "
-					+ " FROM Emp_Visas ev "
-					+ " INNER JOIN Passports pp ON ev.ppt_ev_fk = pp.ppt_id "
-					+ " INNER JOIN visa_types vt on vt.vt_id = ev.vt_ev_fk "
-					+ " INNER JOIN countries_master cm on cm.cnt_id = vt.cnt_vt_fk "
-					+ " WHERE ev.ppt_ev_fk=? order by cm.cnt_name asc, ev.ev_issue_date desc";
-
-			PreparedStatement pstmt = con.prepareStatement(sql1);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_ALL_VISAS_BY_PASSPORT_ID);
 			pstmt.setInt(1, pptId);
 
 			ResultSet rs = pstmt.executeQuery();
@@ -194,42 +183,46 @@ public class VisaDAO extends AbstractDAO {
 			while (rs.next()) {
 				Visa visa = new Visa();
 
-				visa.setVisaId(rs.getInt("ev_id"));
-				visa.setPptId(rs.getInt("ppt_ev_fk"));
-				visa.setVisaTypeId(rs.getInt("vt_ev_fk"));
-				visa.setVisaNo(rs.getString("ev_number"));
-				visa.setIssueDate(DateWrapper.getDateString(rs.getDate("ev_issue_date")));
-				visa.setExpireDate(DateWrapper.getDateString(rs.getDate("ev_expire_date")));
-				visa.setMaxVisits(rs.getInt("ev_max_visits"));
-				visa.setVisitCount(rs.getInt("ev_visit_count"));
-				visa.setPlaceIssued(rs.getString("ev_place_of_issue"));
-				visa.setComments(rs.getString("ev_comments"));
-				visa.setCancelStatus(rs.getInt("ev_cancel_status"));
-				visa.setCancelDate(DateWrapper.getDateString(rs.getDate("ev_cancel_date")));
-				visa.setVisaCost(rs.getString("ev_cost"));
-				visa.setEmpId(rs.getInt("emp_ppt_fk"));
-				visa.setVisaTypeName(rs.getString("vt_abbr"));
-				visa.setVisaCountry(rs.getString("cnt_name"));
+				visa.setVisaId(rs.getInt("EV_ID"));
+				visa.setPptId(rs.getInt("PPT_EV_FK"));
+				visa.setVisaTypeId(rs.getInt("VT_EV_FK"));
+				visa.setVisaNo(rs.getString("EV_NUMBER"));
+				visa.setIssueDate(DateWrapper.getDateString(rs.getDate("EV_ISSUE_DATE")));
+				visa.setExpireDate(DateWrapper.getDateString(rs.getDate("EV_EXPIRE_DATE")));
+				visa.setMaxVisits(rs.getInt("EV_MAX_VISITS"));
+				visa.setVisitCount(rs.getInt("EV_VISIT_COUNT"));
+				visa.setPlaceIssued(rs.getString("EV_PLACE_OF_ISSUE"));
+				visa.setComments(rs.getString("EV_COMMENTS"));
+				visa.setCancelStatus(rs.getInt("EV_CANCEL_STATUS"));
+				visa.setCancelDate(DateWrapper.getDateString(rs.getDate("EV_CANCEL_DATE")));
+				visa.setVisaCost(rs.getString("EV_COST"));
+				visa.setEmpId(rs.getInt("EMP_PPT_FK"));
+				visa.setVisaTypeName(rs.getString("VT_ABBR"));
+				visa.setVisaCountry(rs.getString("CNT_NAME"));
 
 				list.add(visa);
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
 
+	private static final String FIND_MOST_RECENT_VISA_BY_PASSPORT_ID_AND_VISA_TYPE = ""
+			+ " SELECT "
+			+ "   EV.*,PP.EMP_PPT_FK "
+			+ " FROM "
+			+ "   EMP_VISAS EV "
+			+ "   INNER JOIN PASSPORTS PP "
+			+ "     ON PP.PPT_ID=EV.PPT_EV_FK "
+			+ " WHERE "
+			+ "   PP.PPT_EV_FK=? "
+			+ "   AND EV.VT_EV_FK=? "
+			+ " ORDER BY "
+			+ "   EV.EV_ISSUE_DATE DESC";
 
 	/**
 	 * Returns a most recent visa of specified type associated with specified
@@ -242,16 +235,14 @@ public class VisaDAO extends AbstractDAO {
 	 * @return most recent visa of specified type associated with specified
 	 *         passport id
 	 */
-	public Visa getTypeVisa(int pptId, int visaTypeId) {
+	public Visa findMostRecentVisaByPassportIdAndVisaType(int pptId, int visaTypeId) {
 		Visa visa = null;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ev.*,pp.emp_ppt_fk FROM Emp_Visas ev INNER JOIN Passports pp ON "
-					+ " pp.ppt_id=ev.ppt_ev_fk WHERE pp.ppt_ev_fk=? AND ev.vt_ev_fk=? order by ev.ev_issue_date desc";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(FIND_MOST_RECENT_VISA_BY_PASSPORT_ID_AND_VISA_TYPE);
 			pstmt.setInt(1, pptId);
 			pstmt.setInt(2, visaTypeId);
 
@@ -275,84 +266,57 @@ public class VisaDAO extends AbstractDAO {
 				visa.setCancelDate(rs.getString(13));
 				visa.setEmpId(rs.getInt(14));
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return visa;
 	}
 
+	private static final String SQL_DOES_VISA_EXIST_BY_ID = ""
+			+ "SELECT PPT_EV_FK FROM EMP_VISAS WHERE EV_ID=?";
 
-	public boolean visaExist(int visaId) {
+	public boolean doesVisaExistById(int visaId) {
 		Connection con = null;
-		boolean status = false;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ppt_ev_fk from Emp_Visas where ev_id=?";
-			PreparedStatement queryVisa = con.prepareStatement(sql);
+			PreparedStatement queryVisa = con.prepareStatement(SQL_DOES_VISA_EXIST_BY_ID);
 			queryVisa.setInt(1, visaId);
 
 			ResultSet rs = queryVisa.executeQuery();
-
-			if (rs.next()) {
-				status = true;
-			}
+			return rs.next();
 		} catch (Exception e) {
 			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return status;
+		return false;
 	}
 
+	private static final String SQL_FIND_VISA_ID_BY_PASSPORT_ID = ""
+			+ "SELECT EV_ID FROM EMP_VISAS WHERE PPT_EV_FK=?";
 
-	public int getVisaIdFromPpt(int pptId) {
+	public int findVisaIdFromPassportId(int pptId) {
 		Connection con = null;
-		int visaId = 0;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ev_id from Emp_Visas where ppt_ev_fk=?";
-			PreparedStatement queryVisa = con.prepareStatement(sql);
+			PreparedStatement queryVisa = con.prepareStatement(SQL_FIND_VISA_ID_BY_PASSPORT_ID);
 			queryVisa.setInt(1, pptId);
 
 			ResultSet rs = queryVisa.executeQuery();
-
-			if (rs.next()) {
-				visaId = rs.getInt(1);
-			}
+			return rs.getInt(1);
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return visaId;
+		return 0;
 	}
 }

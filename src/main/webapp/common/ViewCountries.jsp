@@ -49,7 +49,7 @@
 	</tr></thead><tbody>
 
 <%
-List<Country> cList = new CountryDAO().getCountryList();
+List<Country> cList = new CountryDAO().findAllCountries();
 request.setAttribute("cList", cList);
 %>
 

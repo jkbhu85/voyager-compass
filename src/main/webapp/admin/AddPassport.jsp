@@ -45,14 +45,14 @@
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
 <%
-List<Country> cList = new CountryDAO().getCountryList();
+List<Country> cList = new CountryDAO().findAllCountries();
 request.setAttribute("cList", cList);
 
 String eId = request.getParameter("empId");
 Integer empId = Integer.parseInt(eId);
 
 ProfileDAO profileDb = new ProfileDAO();
-String loginId = profileDb.getUserID(empId);
+String loginId = profileDb.findLoginIdByEmployeeId(empId);
 
 if (loginId == null) {
 	NotiMsg noti = new NotiMsg(NotiMsg.FAIL, "Employee does not exist.");
@@ -62,7 +62,7 @@ if (loginId == null) {
 }
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
-Profile profile = profileDb.getProfile(loginId, path);
+Profile profile = profileDb.findProfile(loginId, path);
 request.setAttribute("profile", profile);
 %>
 

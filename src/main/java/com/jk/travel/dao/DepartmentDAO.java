@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,102 +12,77 @@ import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Department;
 
 public class DepartmentDAO extends AbstractDAO {
+	
+	private static final String SQL_INSERT_DEPARTMENT = ""
+			+ " INSERT INTO DEPARTMENTMASTER ("
+			+ "   DEPARTMENTNAME, DEPARTMENTABBR, DEPARTMENTINCHGID"
+			+ " ) VALUES(?,?,?)";
 
-	public Connection con;
-	private boolean flag = false;
-
-
-	// insert department
 	public boolean insertDept(Department dept) {
-		// int deptID = getSequenceID("DepartmentMaster", "DepartmentID");
-		PreparedStatement pstmt = null;
+		Connection con = null;
 		try {
 			con = getConnection();
-			pstmt = con
-					.prepareStatement("insert into DepartmentMaster values(DEPT_ID_SEQ.nextval,?,?,?)");
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_DEPARTMENT);
 
-			// pstmt.setInt(1, deptID);
+			Integer inchargeId = dept.getDepartmentInChgID() == 0
+					? null
+					: dept.getDepartmentInChgID();
+			
 			int col = 1;
 			pstmt.setString(col++, dept.getDepartmentName());
 			pstmt.setString(col++, dept.getDepartmentAbbr());
+			pstmt.setObject(col++, inchargeId);
 
-			if (dept.getDepartmentInChgID() == 0) {
-				pstmt.setNull(col++, Types.INTEGER);
-			}
-			else {
-				pstmt.setInt(col++, dept.getDepartmentInChgID());
-			}
-
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) {
-				flag = true;
-				con.commit();
-			}
-			else {
-				con.rollback();
-			}
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return flag;
+		return false;
 	}
 
 
-	// updateDepartmentt
+	private static final String SQL_UPDATE_DEPARTMENT = ""
+			+ " UPDATE DEPARTMENTMASTER "
+			+ " SET DEPARTMENTNAME=?,DEPARTMENTABBR=?,DEPARTMENTINCHGID=? "
+			+ " WHERE DEPARTMENTID=?";
+	
 	public boolean updateDept(Department dept) {
+		Connection con = null;
 		try {
 			con = getConnection();
-			String sql = "update DepartmentMaster set DepartmentName=?,DepartmentAbbr=?,DepartmentInChgID=? where DepartmentID=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_DEPARTMENT);
+
+			Integer inchargeId = dept.getDepartmentInChgID() == 0
+					? null
+					: dept.getDepartmentInChgID();
 
 			pstmt.setString(1, dept.getDepartmentName());
 			pstmt.setString(2, dept.getDepartmentAbbr());
+			pstmt.setObject(3, inchargeId);
 			pstmt.setInt(4, dept.getDepartmentID());
 
-			if (dept.getDepartmentInChgID() == 0) {
-				pstmt.setNull(3, Types.INTEGER);
-			}
-			else {
-				pstmt.setInt(3, dept.getDepartmentInChgID());
-			}
-
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) {
-				flag = true;
-				con.commit();
-			}
-			else {
-				con.commit();
-			}
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return flag;
+		return false;
 	}
 
+	private static final String SQL_FIND_ALL_DEPARTMENTS = ""
+			+ "SELECT * FROM DEPARTMENTMASTER ORDER BY DEPARTMENTID ASC";
 
-	public List<Department> getDepartmentList() {
+	public List<Department> findAllDepartments() {
 		List<Department> list = new ArrayList<>();
+		Connection con = null;
 
 		try {
 			con = getConnection();
 			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery("SELECT * from DepartmentMaster order by DepartmentId asc");
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_DEPARTMENTS);
 			while (rs.next()) {
 				Department dept = new Department();
 				dept.setDepartmentID(rs.getInt(1));
@@ -119,80 +93,37 @@ public class DepartmentDAO extends AbstractDAO {
 				list.add(dept);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_FIND_DEPARTMENT_BY_ID = ""
+			+ "SELECT * FROM DEPARTMENTMASTER WHERE DEPARTMENTID=?";
 
-	public List<Department> getDeptatmentList() {
-		List<Department> list = new ArrayList<>();
-
+	public Department findDeptatmentById(int deptId) {
+		Connection con = null;
 		try {
 			con = getConnection();
-
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery("SELECT * from DepartmentMaster order by DepartmentId desc");
-
-			while (rs.next()) {
-				Department dept = new Department();
-				dept.setDepartmentID(rs.getInt(1));
-				dept.setDepartmentName(rs.getString(2));
-				dept.setDepartmentAbbr(rs.getString(3));
-				dept.setDepartmentInChgID(rs.getInt(4));
-
-				list.add(dept);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogWarning(e);
-		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
-		}
-		return list;
-	}
-
-
-	// select Particular Department
-	public Department getDeptatment(int deptno) {
-		Statement st;
-		Department dept = null;
-		try {
-			con = getConnection();
-			dept = new Department();
-			st = con.createStatement();
-			ResultSet rs = st
-					.executeQuery("SELECT * from DepartmentMaster where departmentid=" + deptno);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_DEPARTMENT_BY_ID);
+			ps.setInt(1, deptId);
+			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-
+				Department dept = new Department();
 				dept.setDepartmentID(rs.getInt(1));
 				dept.setDepartmentName(rs.getString(2));
 				dept.setDepartmentAbbr(rs.getString(3));
 				dept.setDepartmentInChgID(rs.getInt(4));
-
+				return dept;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return dept;
+		return null;
 	}
 
 }

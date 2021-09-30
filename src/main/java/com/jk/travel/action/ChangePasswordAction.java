@@ -31,7 +31,7 @@ public class ChangePasswordAction extends HttpServlet {
 		String curPwd = request.getParameter("oldpassword");
 		String newPwd = request.getParameter("newpassword");
 
-		boolean flag = new SecurityDAO().changePassword(loginId, curPwd, newPwd);
+		boolean flag = new SecurityDAO().updatePassword(loginId, curPwd, newPwd);
 
 		if (flag) {
 			noti.setOk("Password changed successfully.");

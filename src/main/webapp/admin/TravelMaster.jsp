@@ -390,7 +390,7 @@ function clearEmpSel() {
 
 <form method="post" action="/TravelMasterAction" name="register"><table class="form-grid">
 <%
-	int workId = Integer.parseInt((String) request.getParameter("WorkId"));
+int workId = Integer.parseInt((String) request.getParameter("WorkId"));
 	Work work = null;
 	
 	if (workId > 0) {
@@ -404,7 +404,7 @@ function clearEmpSel() {
 	
 	ProfileDAO prof = new ProfileDAO();
 	
-	request.setAttribute("pList", prof.getEmpList());
+	request.setAttribute("pList", prof.findAllEmployees());
 %>
 	<tr>
 		<td>Work ID</td>
@@ -418,7 +418,7 @@ function clearEmpSel() {
 		<td></td>
 	<tr>
 <%
-List<VisaType> vtList = new VisaTypeDAO().getVisaTypeList(work.getCntId() );
+List<VisaType> vtList = new VisaTypeDAO().findAllVisaTypesByCountryId(work.getCntId() );
 request.setAttribute("vtList", vtList);
 %>
 	<tr>

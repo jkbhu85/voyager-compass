@@ -1,17 +1,10 @@
 package com.jk.core.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import javax.servlet.*;
+import javax.servlet.annotation.*;
+import javax.servlet.http.*;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-
-import com.jk.core.db.DBFactory;
-import com.jk.travel.dao.AbstractDAO;
+import com.jk.travel.dao.*;
 
 @WebServlet(urlPatterns = { "/InitServlet" }, loadOnStartup = 0)
 @WebInitParam(name = "config", value = "/WEB-INF/config/system.properties")
@@ -22,33 +15,6 @@ public class InitServlet extends HttpServlet {
 
 	@Override
 	public void init(ServletConfig sc) {
-		ServletContext ctx = sc.getServletContext();
-		InputStream fis = ctx.getResourceAsStream("/WEB-INF/config/system.properties");
-		Properties props = new Properties();
-
-		try {
-			props.load(fis);
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-
-		dobject = new AbstractDAO();
-		dobject.setProperties(props);
-
-		String logFileName = props.getProperty("logFileName");
-
-		if (logFileName == null) {
-			logFileName = "vc.log";
-		}
-
-		LoggerManager.logger = new LoggerManager().getLogger(logFileName);
-		LoggerManager.writeLogInfo("Logger Instantiated");
-
-		try {
-			new DBFactory();
-		} catch (NullPointerException npe) {
-			LoggerManager.writeLogWarning("Connection to database FAILED");
-		}
 
 		/*  
 		String vcImgDirPath = System.getenv("VCIMGPATH");

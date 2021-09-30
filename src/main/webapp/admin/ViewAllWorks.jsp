@@ -39,10 +39,10 @@
 <div class="page-content">
 	
 <%
-List<Work> wList = new WorkDAO().getAll();
+	List<Work> wList = new WorkDAO().findAllWorks();
 
-request.setAttribute("wList", wList);
-%>
+	request.setAttribute("wList", wList);
+	%>
 
 <table class="data-grid"><thead>
 	<tr>

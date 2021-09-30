@@ -41,7 +41,7 @@ public class TravelMasterAction extends HttpServlet {
 		TravelMasterDAO t = new TravelMasterDAO();
 		System.out.println(travel);
 
-		boolean flag = t.insert(travel);
+		boolean flag = t.saveTravel(travel);
 		String target = "/admin/TravelMaster.jsp?WorkId=" + travel.getWorkId();
 
 		if (flag) {

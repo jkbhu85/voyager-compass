@@ -37,11 +37,11 @@
 <%
 String loginId = (String) session.getAttribute("user"); 
 @SuppressWarnings("deprecation")
-Profile profile = new ProfileDAO().getProfile(loginId, request.getRealPath("/userimages"));
+Profile profile = new ProfileDAO().findProfile(loginId, request.getRealPath("/userimages"));
 
 String name = profile.getFirstName() + " " + profile.getLastName();
 WorkDAO workDb = new WorkDAO();
-List<Work> wList = workDb.getEmpWise(profile.getEmpid(), Work.STATUS_PREPARED);
+List<Work> wList = workDb.findAllWorksByEmployeeIdAndStatus(profile.getEmpid(), Work.STATUS_PREPARED);
 
 request.setAttribute("wList", wList);
 %>
@@ -76,7 +76,7 @@ request.setAttribute("wList", wList);
 </c:if>
 
 <%
-List<Work> inchList = workDb.getInchargeWise(profile.getEmpid(), Work.STATUS_PREPARED);
+List<Work> inchList = workDb.findAllWorksByInchargeAndStatus(profile.getEmpid(), Work.STATUS_PREPARED);
 request.setAttribute("inchList", inchList);
 %>
 

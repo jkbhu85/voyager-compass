@@ -12,23 +12,17 @@ import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Embassy;
 
 public class EmbassyDAO extends AbstractDAO {
+	
+	private static final String SQL_INSERT_EMBASSY = ""
+			+ "INSERT INTO FORIGNEMBASSYMASTER VALUES(?,?,?,?,?)";
 
-	public Connection con;
-	private boolean flag = false;
-
-
-	// insert embassy
 	public boolean insertEmbassy(Embassy embassy) {
-		// int embassyID = getSequenceID("ForignEmbassyMaster", "EmbassyID");
-
-		PreparedStatement pstmt = null;
+		Connection con = null;
+		boolean flag = false;
 		try {
 			con = getConnection();
-			pstmt = con
-					.prepareStatement(
-							"insert into ForignEmbassyMaster values(EMBS_ID_SEQ.nextval"
-									+ ",?,?,?,?,?)");
-			// pstmt.setInt(1, embassyID);
+			con.setAutoCommit(false);
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_EMBASSY);
 			int col = 1;
 			pstmt.setInt(col++, embassy.getCountryID());
 			pstmt.setString(col++, embassy.getEmbassyName());
@@ -45,26 +39,25 @@ public class EmbassyDAO extends AbstractDAO {
 				con.rollback();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return flag;
 	}
 
+	private static final String SQL_UPDATE_EMBASSY = ""
+			+ " UPDATE FORIGNEMBASSYMASTER "
+			+ " SET COUNTRYID=?,EMBASSYNAME=?,EMBASSYADDRESS=?,"
+			+ " EMBASSYCONTACTPERNAME=?,EMBASSYPHONENO=? "
+			+ " WHERE EMBASSYID=?";
 
-	// updateEmbassy
 	public boolean updateEmbassy(Embassy embassy) {
-		PreparedStatement pstmt = null;
+		Connection con = null;
+		boolean flag = false;
 		try {
 			con = getConnection();
-			pstmt = con.prepareStatement(
-					"update ForignEmbassyMaster set countryID=?,EmbassyName=?,EmbassyAddress=?,EmbassyContactPerName=?,EmbassyPhoneNo=? where EmbassyID=?");
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_EMBASSY);
 
 			pstmt.setInt(1, embassy.getCountryID());
 			pstmt.setString(2, embassy.getEmbassyName());
@@ -81,29 +74,31 @@ public class EmbassyDAO extends AbstractDAO {
 				con.rollback();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return flag;
 	}
 
+	private static final String SQL_FIND_ALL_EMBASSIES = ""
+			+ " SELECT "
+			+ "   E.* "
+			+ " FROM"
+			+ "   FORIGNEMBASSYMASTER E "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON E.COUNTRYID=C.CNT_ID "
+			+ " ORDER BY C.CNT_NAME";
 
-	public List<Embassy> getEmbassyList() {
+	public List<Embassy> findAllEmbassies() {
 		List<Embassy> list = new ArrayList<>();
+		Connection con = null;
 
 		try {
 			con = getConnection();
 
 			Statement st = con.createStatement();
-			String sql = "SELECT e.* FROM ForignEmbassyMaster e INNER JOIN Countries_Master c ON "
-					+ " e.countryid=c.cnt_id ORDER BY upper(c.cnt_name)";
-			ResultSet rs = st.executeQuery(sql);
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_EMBASSIES);
 
 			while (rs.next()) {
 				Embassy embassy = new Embassy();
@@ -117,31 +112,25 @@ public class EmbassyDAO extends AbstractDAO {
 				list.add(embassy);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
-
-	// select Particular Embassy
-	public Embassy getEmbassy(int embassyno) {
-		Statement st;
-		Embassy embassy = null;
+	private static final String SQL_FIND_EMBASSY_BY_ID = ""
+			+ "SELECT * FROM FORIGNEMBASSYMASTER WHERE EMBASSYID=?";
+	
+	public Embassy findEmbassyById(int embassyId) {
+		Connection con = null;
 		try {
 			con = getConnection();
-			embassy = new Embassy();
-			st = con.createStatement();
-			ResultSet rs = st
-					.executeQuery("SELECT * from ForignEmbassyMaster where EmbassyID=" + embassyno);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_EMBASSY_BY_ID);
+			ps.setInt(1, embassyId);
+			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-
+				Embassy embassy = new Embassy();
 				embassy.setEmbassyID(rs.getInt(1));
 				embassy.setCountryID(rs.getInt(2));
 				embassy.setEmbassyName(rs.getString(3));
@@ -150,16 +139,11 @@ public class EmbassyDAO extends AbstractDAO {
 				embassy.setPhoneNo(rs.getString(6));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return embassy;
+		return null;
 	}
 
 }

@@ -285,21 +285,6 @@ public class SearchEmpAction extends HttpServlet {
 		return data;
 	}
 
-
-	private Calendar parseDate(String dateStr) {
-		Calendar cal = Calendar.getInstance();
-		String[] dateParts = dateStr.split("-");
-
-		int day = Integer.parseInt(dateParts[0]);
-		int month = Integer.parseInt(dateParts[1]);
-		int year = Integer.parseInt(dateParts[2]);
-
-		cal.set(year, month, day);
-
-		return cal;
-	}
-
-
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {

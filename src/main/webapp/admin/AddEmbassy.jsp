@@ -39,7 +39,7 @@
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
 <%
-List<Country> cList = new CountryDAO().getCountryList();
+List<Country> cList = new CountryDAO().findAllCountries();
 request.setAttribute("cList", cList);
 %>
 <form method="post" name="register" action="/EmbassyAction"><table class="form-grid">

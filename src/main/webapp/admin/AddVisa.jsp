@@ -111,7 +111,7 @@ $(document).ready(function(){
 <div class="form-wrapper">
 <div id="formErrors" tabindex="0"></div>
 <%
-List<Country> cList = new CountryDAO().getCountryList();
+List<Country> cList = new CountryDAO().findAllCountries();
 request.setAttribute("cList", cList);
 
 // checking if supplied passport id exist
@@ -119,14 +119,13 @@ request.setAttribute("cList", cList);
 int pptId = Integer.parseInt(request.getParameter("pptId"));
 PassportDAO pptDb = new PassportDAO();
 
-if (!pptDb.passportExists(pptId)) {
+if (!pptDb.doesPassportExists(pptId)) {
 	NotiMsg noti = new NotiMsg(NotiMsg.FAIL, "Passport does not exist.");
 	request.getSession().setAttribute("status", noti);
 	
 	response.sendRedirect("/index.jsp");
 	return;
 }
-
 %>
 
 <form action="/AddVisaAction" method="post" name="register" id="register">

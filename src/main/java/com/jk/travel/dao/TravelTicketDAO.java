@@ -14,22 +14,15 @@ import com.jk.travel.model.TravelTicket;
 
 public class TravelTicketDAO extends AbstractDAO {
 
-	public Connection con;
-	private boolean flag = false;
+	private static final String SQL_INSERT_TICKET = ""
+			+ "INSERT INTO TICKETSMASTER VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
-
-	// insert visatype
 	public boolean insertTicket(TravelTicket ticket) {
-
-		PreparedStatement pstmt = null;
+		Connection con = null;
 		try {
-			// int travelTicketID = getSequenceID("ticketsmaster", "ticketid");
-
 			con = getConnection();
-			pstmt = con.prepareStatement(
-					"insert into ticketsmaster values(TICKET_ID_SEQ.nextval,?,?,?,?,?,?,?,?,?,?,?,?)");
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_TICKET);
 			int col = 1;
-			// pstmt.setInt(col++, travelTicketID);
 			pstmt.setInt(col++, ticket.getTravelID());
 			pstmt.setString(col++, ticket.getTicketNo());
 			pstmt.setString(col++, ticket.getTicketBookDate());
@@ -43,31 +36,28 @@ public class TravelTicketDAO extends AbstractDAO {
 			pstmt.setString(col++, ticket.getJourneytime());
 			pstmt.setString(col++, ticket.getVehicleNo());
 
-			int i = pstmt.executeUpdate();
-			if (i > 0) flag = true;
+			int rowsUpdated = pstmt.executeUpdate();
+			return (rowsUpdated > 0);
 		} catch (Exception e) {
 			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return flag;
+		return false;
 	}
 
+	private static final String SQL_FIND_ALL_TICKETS = ""
+			+ "SELECT * FROM TICKETSMASTER ORDER BY AVAILABLEDATE DESC";
 
-	public List<TravelTicket> getTicketList() {
+	public List<TravelTicket> findAllTickets() {
 		List<TravelTicket> list = new ArrayList<>();
+		Connection con = null;
 
 		try {
 			con = getConnection();
-
 			Statement st = con.createStatement();
-			ResultSet rs = st
-					.executeQuery("SELECT * from ticketsmaster order by AVAILABLEDATE desc");
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_TICKETS);
 
 			while (rs.next()) {
 				TravelTicket ticket = new TravelTicket();
@@ -88,31 +78,27 @@ public class TravelTicketDAO extends AbstractDAO {
 				list.add(ticket);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_FIND_TICKET_BY_ID = ""
+			+ "SELECT * FROM TICKETSMASTER WHERE TICKETID=?";
 
-	public TravelTicket getTicket(String ticketId) {
-		TravelTicket ticket = null;
+	public TravelTicket findTicketById(String ticketId) {
+		Connection con = null;
 
 		try {
-
 			con = getConnection();
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(
-					"SELECT * from ticketsmaster where TICKETID='" + ticketId + "'");
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_TICKET_BY_ID);
+			ps.setString(1, ticketId);
+			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()) {
-				ticket = new TravelTicket();
+				TravelTicket ticket = new TravelTicket();
 				ticket.setEmpTicketID(rs.getInt(1));
 				ticket.setTravelID(rs.getInt(2));
 				ticket.setTicketNo(rs.getString(3));
@@ -128,37 +114,35 @@ public class TravelTicketDAO extends AbstractDAO {
 				ticket.setVehicleNo(rs.getString(13));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return ticket;
+		return null;
 	}
 
+	private static final String SQL_FIND_TICKET_ID_BY_TRAVEL_ID = ""
+			+ "SELECT TICKETID FROM TICKETSMASTER WHERE TRAVELID=?";
 
 	public int getTicketIdFromTravel(int travelId) {
-		int ticketId = 0;
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select TICKETID from ticketsmaster where travelid='" + travelId + "'";
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_TICKET_ID_BY_TRAVEL_ID);
+			ps.setInt(1, travelId);
+			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				ticketId = rs.getInt(1);
+				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
+		} finally {
+			DaoUtils.closeCon(con);
 		}
 
-		return ticketId;
+		return 0;
 	}
 
 }

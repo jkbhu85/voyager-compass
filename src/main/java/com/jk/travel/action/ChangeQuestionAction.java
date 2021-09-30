@@ -36,7 +36,7 @@ public class ChangeQuestionAction extends HttpServlet {
 
 		String secQues = request.getParameter("squest");
 
-		boolean flag = new SecurityDAO().changeQuestion(loginId, password, secQues, secAns);
+		boolean flag = new SecurityDAO().updateSecretQuestion(loginId, password, secQues, secAns);
 
 		if (flag) {
 			noti.setOk("Security Question changed successfully.");

@@ -1,0 +1,31 @@
+USE TEST_VOYAGER_COMPASS;
+
+INSERT INTO COUNTRIES_MASTER (CNT_NAME, CNT_FULL_NAME, CNT_NLTY)
+VALUES ('India', 'Republic of India', 'Indian');
+
+INSERT INTO COUNTRIES_MASTER (CNT_NAME, CNT_FULL_NAME, CNT_NLTY)
+VALUES ('US', 'United States of America', 'American');
+
+INSERT INTO DEPARTMENTMASTER (
+DEPARTMENTNAME, DEPARTMENTABBR, DEPARTMENTINCHGID)
+VALUES
+('Human Resource', 'HR', null);
+
+INSERT INTO EMPLOYEEMASTER (
+	FIRSTNAME, LASTNAME,
+	DOB, DOJ,
+    LOGINID, PASSWORD,
+	S_QUES, S_ANS,
+	EMAIL, PHONE, 
+	PHOTO, DEPARTMENTID,
+	TYPE, PHOTOEXT, GENDER
+)
+VALUES (
+'Admin', 'Kumar',
+str_to_date('1991-08-01','%Y-%m-%d'), str_to_date('2019-09-09','%Y-%m-%d'),
+'kumarj0', 'test@123',
+'', '',
+'admin@mail.com', '',
+'', 1,
+'admin', '', 'Male'
+);

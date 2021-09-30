@@ -55,10 +55,10 @@ PAGE CONTENT goes here
 	</tr></thead><tbody>
 		
 <%
-List<Hotel> hList = new HotelDAO().getHotelList();
-request.setAttribute("hList", hList);
-//request.setAttribute("countryDb", new CountryDAO());
-%>
+		List<Hotel> hList = new HotelDAO().findAllHotels();
+		request.setAttribute("hList", hList);
+		//request.setAttribute("countryDb", new CountryDAO());
+		%>
 <c:forEach var="hotel" items="${hList}" varStatus="counter">
 	<tr>
 		<td class="block-wrapper"><c:choose>

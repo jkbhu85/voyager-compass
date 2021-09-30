@@ -16,14 +16,11 @@
 
 
 <body>
-<%-- Checking if user is logged in or not --%>
-<c:if test="${empty sessionScope.role}">
-	<c:redirect url="/index.jsp" />
-</c:if>
-
 <jsp:include page="/oth/header.html"/>
 
-<jsp:include page="/oth/selectMenu.jsp"/>
+<c:if test="${not empty sessionScope.role}">
+	<jsp:include page="/oth/selectMenu.jsp"/>
+</c:if>
 
 
 <main>

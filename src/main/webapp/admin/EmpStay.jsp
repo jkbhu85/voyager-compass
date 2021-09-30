@@ -41,7 +41,7 @@
 
 <%
 int tid = Integer.parseInt((String) request.getParameter("TravelId"));
-Travel travel = new TravelMasterDAO().get(tid);
+Travel travel = new TravelMasterDAO().findTravelById(tid);
 
 if (travel == null) {
 	request.getRequestDispatcher("/index.jsp").forward(request, response);
@@ -49,7 +49,7 @@ if (travel == null) {
 }
 
 Work work = new WorkDAO().get(travel.getWorkId());
-List<Hotel> hList = new HotelDAO().getHotelList(work.getCntId());
+List<Hotel> hList = new HotelDAO().getHotelsByCountryId(work.getCntId());
 request.setAttribute("travel", travel);
 request.setAttribute("work", work);
 request.setAttribute("hList", hList);

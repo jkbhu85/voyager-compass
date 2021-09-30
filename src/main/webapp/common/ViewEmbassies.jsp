@@ -44,9 +44,9 @@
 <div class="page-content">
 		
 <%
-request.setAttribute("eList", new EmbassyDAO().getEmbassyList());
-request.setAttribute("countryDb", new CountryDAO());
-%>
+		request.setAttribute("eList", new EmbassyDAO().findAllEmbassies());
+		request.setAttribute("countryDb", new CountryDAO());
+		%>
 <table class="data-grid"><thead>	
 	<tr>
 		<th>S.No.</th>

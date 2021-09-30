@@ -53,7 +53,7 @@ String travelId = request.getParameter("TravelId");
 int id = Integer.parseInt(travelId);
 TravelMasterDAO travelDb = new TravelMasterDAO();
 
-if (!travelDb.exists(id)) {
+if (!travelDb.doesTravelExistById(id)) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);
 	return;
 }

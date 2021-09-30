@@ -42,21 +42,21 @@ public class ViewTravelAction extends HttpServlet {
 		request.setAttribute("work", work);
 
 		TravelMasterDAO tm = new TravelMasterDAO();
-		Travel travel = tm.get(tm.getTravelFromWork(work.getWorkId()));
+		Travel travel = tm.findTravelById(tm.findTravelIdByWorkId(work.getWorkId()));
 
 		if (travel != null) {
 			TravelTicketDAO ttd = new TravelTicketDAO();
 			StayDAO sdao = new StayDAO();
 
 			String ticketId = ttd.getTicketIdFromTravel(travel.getTravelId()) + "";
-			TravelTicket ticket = ttd.getTicket(ticketId);
+			TravelTicket ticket = ttd.findTicketById(ticketId);
 
 			int stayId = sdao.getStayIdFromTravel(travel.getTravelId() + "");
-			Stay stay = sdao.getStay(stayId);
+			Stay stay = sdao.findStayById(stayId);
 
 			ProfileDAO profileDb = new ProfileDAO();
 			@SuppressWarnings("deprecation")
-			Profile emp = profileDb.getProfile(profileDb.getUserID(travel.getEmpId()),
+			Profile emp = profileDb.findProfile(profileDb.findLoginIdByEmployeeId(travel.getEmpId()),
 					request.getRealPath("/userimages"));
 
 			request.setAttribute("emp", emp);
@@ -65,11 +65,11 @@ public class ViewTravelAction extends HttpServlet {
 			request.setAttribute("stay", stay);
 
 			if (stay != null) {
-				request.setAttribute("hotel", new HotelDAO().getHotel(stay.getHotelId()));
+				request.setAttribute("hotel", new HotelDAO().findHotelById(stay.getHotelId()));
 			}
 
 			if (emp != null) {
-				request.setAttribute("dept", new DepartmentDAO().getDeptatment(emp.getDeptID()));
+				request.setAttribute("dept", new DepartmentDAO().findDeptatmentById(emp.getDeptID()));
 			}
 		}
 

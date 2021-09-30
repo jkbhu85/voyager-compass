@@ -45,7 +45,7 @@
 int empId = Integer.parseInt(request.getParameter("empId"));
 ProfileDAO profileDb = new ProfileDAO();
 
-if (!profileDb.profileIdExists(empId)) {
+if (!profileDb.doesProfileIdExists(empId)) {
 	request.getSession().setAttribute("status", new NotiMsg(NotiMsg.FAIL, "Employee does not exist."));
 	response.sendRedirect("/index.jsp");
 	return;
@@ -54,15 +54,15 @@ if (!profileDb.profileIdExists(empId)) {
 String role = (String) session.getAttribute("role");
 String loginId = (String) session.getAttribute("user");
 
-if ("employee".equals(role) && !loginId.equals(profileDb.getUserID(empId))) {
+if ("employee".equals(role) && !loginId.equals(profileDb.findLoginIdByEmployeeId(empId))) {
 	response.sendRedirect("/NotFound.jsp");
 	return;
 }
 
 PassportDAO pptDb = new PassportDAO();
-int pptId = pptDb.getPptIdFromEmp(empId);
+int pptId = pptDb.findPptIdFromEmp(empId);
 
-Passport ppt = pptDb.getPassport(pptId);
+Passport ppt = pptDb.findPassportById(pptId);
 request.setAttribute("ppt", ppt);
 
 if (ppt == null) {
@@ -72,11 +72,11 @@ if (ppt == null) {
 
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
-loginId = profileDb.getUserID(empId);
-Profile profile = profileDb.getProfile(loginId, path);
+loginId = profileDb.findLoginIdByEmployeeId(empId);
+Profile profile = profileDb.findProfile(loginId, path);
 request.setAttribute("profile", profile);
 
-Department dept = new DepartmentDAO().getDeptatment(profile.getDeptID());
+Department dept = new DepartmentDAO().findDeptatmentById(profile.getDeptID());
 request.setAttribute("dept", dept);
 
 request.setAttribute("visaDb", new VisaDAO());

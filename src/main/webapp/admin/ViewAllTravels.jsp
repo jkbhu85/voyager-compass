@@ -48,13 +48,12 @@
 	</tr></thead><tbody>
 		
 <%
-List<Travel> tList = new TravelMasterDAO().getAll();
-request.setAttribute("tList", tList);
-request.setAttribute("cDao", new CountryDAO());
-request.setAttribute("profile", new ProfileDAO());
-request.setAttribute("workDb", new WorkDAO());
-
-%>
+		List<Travel> tList = new TravelMasterDAO().findAllTravels();
+		request.setAttribute("tList", tList);
+		request.setAttribute("cDao", new CountryDAO());
+		request.setAttribute("profile", new ProfileDAO());
+		request.setAttribute("workDb", new WorkDAO());
+		%>
 <c:forEach var="travel" items="${tList}">
 	<tr>
 		<td>${travel.getTravelId()}</td>

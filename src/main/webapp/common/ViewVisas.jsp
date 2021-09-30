@@ -42,7 +42,6 @@
 <div id="formErrors" tabindex="0"></div>
 
 <%
-
 VisaDAO visaDb = new VisaDAO();
 PassportDAO pptDb = new PassportDAO();
 ProfileDAO profileDb = new ProfileDAO();
@@ -57,7 +56,7 @@ request.setAttribute("deptDb", deptDb);
 // pass id must exist
 int pptId = Integer.parseInt(request.getParameter("pptId"));
 //System.out.println("pptid: " + pptId);
-Passport ppt = pptDb.getPassport(pptId);
+Passport ppt = pptDb.findPassportById(pptId);
 
 if (ppt == null) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);
@@ -65,9 +64,9 @@ if (ppt == null) {
 }
 
 //visa must exist
-int visaId = visaDb.getVisaIdFromPpt(pptId);
+int visaId = visaDb.findVisaIdFromPassportId(pptId);
 //System.out.println("visaid: " + visaId);
-List<Visa> vList = visaDb.getPptVisas(pptId);
+List<Visa> vList = visaDb.findAllVisasByPassportId(pptId);
 
 if (vList.size() == 0) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);
@@ -83,7 +82,7 @@ String loginId = (String) session.getAttribute("user");
 // if employee is visiting this page then 
 // visa should be his own
 //System.out.println("emploginid: " + profileDb.getUserID(empId));
-if ("employee".equals(role) && !loginId.equals(profileDb.getUserID(empId))) {
+if ("employee".equals(role) && !loginId.equals(profileDb.findLoginIdByEmployeeId(empId))) {
 	request.getRequestDispatcher("/NotFound.jsp").forward(request, response);
 	return;
 }
@@ -91,10 +90,10 @@ if ("employee".equals(role) && !loginId.equals(profileDb.getUserID(empId))) {
 
 @SuppressWarnings("deprecation")
 String path = request.getRealPath("/userimages");
-String empLoginId = profileDb.getUserID(ppt.getEmpId());
-Profile profile = profileDb.getProfile(empLoginId, path);
+String empLoginId = profileDb.findLoginIdByEmployeeId(ppt.getEmpId());
+Profile profile = profileDb.findProfile(empLoginId, path);
 
-Department dept = deptDb.getDeptatment(profile.getDeptID());
+Department dept = deptDb.findDeptatmentById(profile.getDeptID());
 
 request.setAttribute("vList", vList);
 request.setAttribute("ppt", ppt);

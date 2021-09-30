@@ -42,7 +42,7 @@ public class PassportAction extends HttpServlet {
 		ppt.setAddress(request.getParameter("pptAddr"));
 		ppt.setComments(request.getParameter("pptComments"));
 
-		boolean flag = new PassportDAO().addPassport(ppt);
+		boolean flag = new PassportDAO().insertPassport(ppt);
 
 		String target = "/admin/AddPassport.jsp?empId=" + ppt.getEmpId();
 

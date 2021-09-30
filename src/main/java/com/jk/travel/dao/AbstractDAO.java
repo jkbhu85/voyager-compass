@@ -1,80 +1,54 @@
 package com.jk.travel.dao;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
 
-import com.jk.core.util.LoggerManager;
+import com.jk.core.util.*;
 
 public class AbstractDAO {
-	private Connection mCon;
+
 	private static Properties mProps;
 
-
-	public Properties getProperties() {
+	public static Properties getProperties()
+	{
+		if (mProps == null) {
+			mProps = new Properties();
+			try {
+				mProps.load(findResourceStream());
+			}
+			catch (IOException e) {
+				LoggerManager.writeLogInfo(e);
+			}
+		}
 		return mProps;
 	}
-
-
-	public void setProperties(Properties aProps) {
-		mProps = aProps;
+	
+	static InputStream findResourceStream() {
+		InputStream in = AbstractDAO.class.getResourceAsStream("application.properties");
+		if (in == null) {
+			return AbstractDAO.class.getResourceAsStream("/application.properties");
+		}
+		return in;
 	}
 
-
-	public Connection getConnection() {
+	public Connection getConnection()
+	{
 		try {
 			Properties aProps = getProperties();
-			Class.forName(aProps.getProperty("driver"));
-
-			mCon = DriverManager.getConnection(aProps.getProperty("url"),
-					aProps.getProperty("duser"), aProps.getProperty("dpass"));
-
-		} catch (ClassNotFoundException cnfe) {
-			cnfe.printStackTrace();
-			LoggerManager.writeLogWarning(cnfe);
-		} catch (SQLException se) {
-			se.printStackTrace();
+			String driverClassName = aProps.getProperty("vc.ds.driver-class-name");
+			String jdbcUrl = aProps.getProperty("vc.ds.jdbc-url");
+			String username = aProps.getProperty("vc.ds.username");
+			String password = aProps.getProperty("vc.ds.password");
+			
+			Class.forName(driverClassName);
+			return DriverManager.getConnection(jdbcUrl, username, password);
+		}
+		catch (Exception se) {
 			LoggerManager.writeLogWarning(se);
 		}
 
-		return mCon;
+		return null;
 	}
 
-
-	public int getSequenceID(String tableName, String pkid) {
-		int num = 0;
-		Connection con = null;
-		boolean exStatus = false; // whether exception occurred
-
-		try {
-			con = getConnection();
-			String sql = "select (nvl(max(" + pkid + "),0)+1) from " + tableName;
-
-			PreparedStatement getMaxNum = con.prepareStatement(sql);
-
-			ResultSet rs = getMaxNum.executeQuery();
-
-			if (rs.next()) {
-				num = rs.getInt(1);
-			}
-		} catch (Exception e) {
-			LoggerManager.writeLogWarning(e);
-			exStatus = true;
-		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					LoggerManager.writeLogWarning(e);
-				}
-			}
-		}
-
-		if (exStatus) throw new RuntimeException("Exception occurred during sequence number retrieval.");
-
-		return num + 1;
-	}
 }

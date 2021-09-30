@@ -1,20 +1,20 @@
 package com.jk.travel.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
-import com.jk.core.util.DateWrapper;
-import com.jk.core.util.LoggerManager;
-import com.jk.travel.model.Travel;
+import com.jk.core.util.*;
+import com.jk.travel.model.*;
 
 public class TravelMasterDAO extends AbstractDAO {
 
-	public boolean insert(Travel travel) {
+	private static final String SQL_INSERT_TRAVEL = ""
+			+ "INSERT INTO TRAVELMASTER VALUES(TRAVEL_ID_SEQ.NEXTVAL,?,?,?,?,?)";
+	private static final String SQL_UPDATE_VISA = ""
+			+ "UPDATE EMP_VISAS SET EV_VISIT_COUNT = EV_VISIT_COUNT+1 "
+			+ "WHERE PPT_EV_FK=? AND VT_EV_FK=? AND EV_ISSUE_DATE=?";
+	
+	public boolean saveTravel(Travel travel) {
 		boolean status = false;
 		Connection con = null;
 
@@ -30,11 +30,8 @@ public class TravelMasterDAO extends AbstractDAO {
 
 			}
 
-			String sql = "insert into travelmaster values(travel_id_seq.nextval,?,?,?,?,?)";
-			String visaSql = "update Emp_Visas set ev_visit_count = ev_visit_count+1 "
-					+ "where ppt_ev_fk=? and vt_ev_fk=? and ev_issue_date=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_TRAVEL);
 			int col = 1;
 			pstmt.setInt(col++, travel.getEmpId());
 			pstmt.setString(col++, DateWrapper.parseDate(travel.getStartDate()));
@@ -46,8 +43,8 @@ public class TravelMasterDAO extends AbstractDAO {
 			boolean status2 = false;
 
 			if (visaTypeId > 0) {
-				PreparedStatement psVisa = con.prepareStatement(visaSql);
-				int pptId = new PassportDAO().getPptIdFromEmp(travel.getEmpId());
+				PreparedStatement psVisa = con.prepareStatement(SQL_UPDATE_VISA);
+				int pptId = new PassportDAO().findPassportIdByEmployeeId(travel.getEmpId());
 				psVisa.setInt(1, pptId);
 				psVisa.setInt(2, visaTypeId);
 				psVisa.setString(3, travel.getVisaIssueDate());
@@ -68,185 +65,123 @@ public class TravelMasterDAO extends AbstractDAO {
 			}
 
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 		return status;
 	}
 
+	
+	private static final String SQL_FIND_TRAVEL_ID_BY_WORK_ID = ""
+			+ "SELECT TRAVELID FROM TRAVELMASTER WHERE WORKID=?";
 
-	public int getTravelFromWork(int workId) {
-		int travelId = 0;
+	public int findTravelIdByWorkId(int workId) {
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select travelid from travelmaster where workid=?";
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_TRAVEL_ID_BY_WORK_ID);
 			ps.setInt(1, workId);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				travelId = rs.getInt(1);
+				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			// e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		}
 
-		return travelId;
+		return 0;
 	}
 
-
-	private boolean update(Travel travel) {
-		Connection con = null;
-		boolean status = false;
-
-		try {
-			con = getConnection();
-
-			String sql = "update travelmaster set employeeid=?,travelstartdate=?, "
-					+ " travelenddate=?,instructions=? where travelid=?";
-
-			PreparedStatement pstmt = con.prepareStatement(sql);
-
-			pstmt.setInt(1, travel.getEmpId());
-			pstmt.setString(2, travel.getStartDate());
-			pstmt.setString(3, travel.getEndDate());
-			pstmt.setString(5, travel.getInst());
-			pstmt.setInt(6, travel.getTravelId());
-
-			status = pstmt.executeUpdate() > 0;
-		} catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogWarning(e);
-		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
-		}
-
-		return status;
-	}
-
-
-	public List<Travel> getAll() {
+	private static final String SQL_FIND_ALL_TRAVELS = ""
+			+ "SELECT * FROM TRAVELMASTER ORDER BY TRAVELSTARTDATE DESC";
+	
+	public List<Travel> findAllTravels() {
 		List<Travel> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
 			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(
-					"SELECT * from travelmaster order by TRAVELSTARTDATE desc");
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_TRAVELS);
 
 			while (rs.next()) {
 				Travel travel = new Travel();
 
 				travel = new Travel();
-				travel.setTravelId(rs.getInt("travelid"));
-				travel.setEmpId(rs.getInt("employeeId"));
-				travel.setStartDate(DateWrapper.getDateString(rs.getDate("travelstartdate")));
-				travel.setEndDate(DateWrapper.getDateString(rs.getDate("travelenddate")));
-				travel.setInst(rs.getString("instructions"));
-				travel.setWorkId(rs.getInt("workid"));
+				travel.setTravelId(rs.getInt("TRAVELID"));
+				travel.setEmpId(rs.getInt("EMPLOYEEID"));
+				travel.setStartDate(DateWrapper.getDateString(rs.getDate("TRAVELSTARTDATE")));
+				travel.setEndDate(DateWrapper.getDateString(rs.getDate("TRAVELENDDATE")));
+				travel.setInst(rs.getString("INSTRUCTIONS"));
+				travel.setWorkId(rs.getInt("WORKID"));
 
 				list.add(travel);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_FIND_TRAVEL_BY_ID = ""
+			+ "SELECT * FROM TRAVELMASTER WHERE TRAVELID=?";
 
-	public Travel get(int travelId) {
+	public Travel findTravelById(int travelId) {
 		Travel travel = null;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT * from travelmaster where travelid=?";
 
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_TRAVEL_BY_ID);
 			ps.setInt(1, travelId);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
 				travel = new Travel();
-				travel.setTravelId(rs.getInt("travelid"));
-				travel.setEmpId(rs.getInt("employeeId"));
-				travel.setStartDate(DateWrapper.getDateString(rs.getDate("travelstartdate")));
-				travel.setEndDate(DateWrapper.getDateString(rs.getDate("travelenddate")));
-				travel.setInst(rs.getString("instructions"));
-				travel.setWorkId(rs.getInt("workid"));
+				travel.setTravelId(rs.getInt("TRAVELID"));
+				travel.setEmpId(rs.getInt("EMPLOYEEID"));
+				travel.setStartDate(DateWrapper.getDateString(rs.getDate("TRAVELSTARTDATE")));
+				travel.setEndDate(DateWrapper.getDateString(rs.getDate("TRAVELENDDATE")));
+				travel.setInst(rs.getString("INSTRUCTIONS"));
+				travel.setWorkId(rs.getInt("WORKID"));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return travel;
 	}
 
 
-	public boolean exists(int travelId) {
-		boolean result = false;
+	private static final String sql = ""
+			+ "SELECT TRAVELID FROM TRAVELMASTER WHERE TRAVELID=?";
+
+	public boolean doesTravelExistById(int travelId) {
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT travelid from travelmaster where travelid=?";
 
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setInt(1, travelId);
 
 			ResultSet rs = ps.executeQuery();
-
-			if (rs.next()) {
-				result = true;
-			}
+			return rs.next();
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return result;
+		return false;
 	}
 }

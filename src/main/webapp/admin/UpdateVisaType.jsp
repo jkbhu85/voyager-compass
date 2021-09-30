@@ -50,7 +50,7 @@ if (visaType == null) {
 	response.sendRedirect("/common/ViewVisaTypes.jsp");
 	return;
 }
-request.setAttribute("cList", new CountryDAO().getCountryList());
+request.setAttribute("cList", new CountryDAO().findAllCountries());
 request.setAttribute("visaType", new VisaTypeDAO().getVisaType(visaTypeId));
 %>
 

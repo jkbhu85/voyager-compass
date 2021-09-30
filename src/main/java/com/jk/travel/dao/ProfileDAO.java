@@ -1,37 +1,34 @@
-/*
- * ProfileDAO.java
- *
- * 
- * 
- */
-
 package com.jk.travel.dao;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
+import java.io.*;
+import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
 
-import javax.servlet.http.Part;
+import javax.servlet.http.*;
 
-import com.jk.core.util.DateWrapper;
-import com.jk.core.util.LoggerManager;
-import com.jk.travel.model.Profile;
-import com.jk.travel.model.ProfileData;
+import com.jk.core.util.*;
+import com.jk.travel.model.*;
 
 public class ProfileDAO extends AbstractDAO {
 
-	public boolean registration(Profile p) {
+	private static final String SQL_INSERT_USER = "INSERT INTO EMPLOYEEMASTER VALUES ( " +
+			" ?, ?, ?, " +     // FN, LN, DOB
+			" SYSDATE, " +     // DOJ
+			" ?, ?, ?, ?, " +  // LOGINID, PWD, SQUES, SANS
+			" ?, ?, " +        // EMAIL, PHONE
+			" ?, " +           // PHOTO
+			" ?, ?, ?, " +     // DEPTID, DSGN, EXT
+			" ? " +            // GENDER
+			" )";
+	
+	private static final String SQL_INSERT_ADDRESS = "INSERT INTO ADDRESSES VALUES ( "
+			+ " ?, "          // EMP ID
+			+ " ?, ?, ?, "    // TYPE, LINE1, LINE2
+			+ " ?, ?, ?, ? " // CITY, STATE, COUNTRY, PIN
+			+ " )";
+
+	public boolean saveProfile(Profile p) {
 		boolean status = false;
 		Connection con = null;
 
@@ -40,25 +37,7 @@ public class ProfileDAO extends AbstractDAO {
 			con.setAutoCommit(false);
 			Part imgPart = p.getProfileImgPart();
 
-			String prfSql = "insert into employeemaster values ( " +
-					" emp_id_seq.nextval, " +
-					" ?, ?, ?, " +     // fn, ln, dob
-					" sysdate, " +     // doj
-					" ?, ?, ?, ?, " +  // loginId, pwd, sQues, sAns
-					" ?, ?, " +        // email, phone
-					" ?, " +           // photo
-					" ?, ?, ?, " +      // deptId, dsgn, ext
-					" ? " +            // gender
-					" )";
-
-			String addrSql = "insert into addresses values ( "
-					+ " ?, "          // emp id
-					+ " addr_id_seq.nextval, "
-					+ " ?, ?, ?, "    // type, line1, line2
-					+ " ?, ?, ?, ? " // city, state, country, pin
-					+ " )";
-
-			PreparedStatement prfStmt = con.prepareStatement(prfSql, new String[] { "employeeid" });
+			PreparedStatement prfStmt = con.prepareStatement(SQL_INSERT_USER, new String[] { "EMPLOYEEID" });
 			// preparing profile statement
 			int col = 1;
 			prfStmt.setString(col++, p.getFirstName());
@@ -98,7 +77,7 @@ public class ProfileDAO extends AbstractDAO {
 			System.out.println("Auto gen profile id: " + empId);
 
 			// preparing permanent addr
-			PreparedStatement prmAddrStmt = con.prepareStatement(addrSql);
+			PreparedStatement prmAddrStmt = con.prepareStatement(SQL_INSERT_ADDRESS);
 			col = 1;
 			prmAddrStmt.setInt(col++, empId);
 
@@ -111,7 +90,7 @@ public class ProfileDAO extends AbstractDAO {
 			prmAddrStmt.setString(col++, p.getPin());
 
 			// preparing current addr
-			PreparedStatement curAddrStmt = con.prepareStatement(addrSql);
+			PreparedStatement curAddrStmt = con.prepareStatement(SQL_INSERT_ADDRESS);
 			col = 1;
 			curAddrStmt.setInt(col++, empId);
 
@@ -134,307 +113,117 @@ public class ProfileDAO extends AbstractDAO {
 				con.rollback();
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
 
-	public Profile getProfile(String loginId, String path) {
+	String SQL_FIND_USER_PROFILE = "SELECT * FROM EMPLOYEEMASTER WHERE LOGINID=?";
+	String SQL_FIND_ALL_USER_ADDRESSES = "SELECT * FROM ADDRESSES WHERE EMPLOYEEID=?";
+
+	public Profile findProfile(String loginId, String imageBasePath) {
 		Profile profile = null;
 		Connection con = null;
-		boolean flag = false;
 
 		try {
 			con = getConnection();
-			String empSql = "select * from employeemaster where loginid=?";
-			String addrSql = "select * from addresses where employeeid=?";
 
-			PreparedStatement empSt = con.prepareStatement(empSql);
-			PreparedStatement addrSt = con.prepareStatement(addrSql);
+			PreparedStatement empSt = con.prepareStatement(SQL_FIND_USER_PROFILE);
 
 			empSt.setString(1, loginId);
 			ResultSet empRs = empSt.executeQuery();
 
 			if (empRs.next()) {
 				profile = new Profile();
-				profile.setEmpid(empRs.getInt("employeeid"));
-				profile.setFirstname(empRs.getString("firstname"));
-				profile.setLastName(empRs.getString("lastname"));
-				profile.setBdate(DateWrapper.getDateString(empRs.getDate("dob")));
-				profile.setJoinDate(DateWrapper.getDateString(empRs.getDate("doj")));
-				profile.setLoginID(empRs.getString("loginid"));
-				profile.setEmail(empRs.getString("email"));
-				profile.setPhone(empRs.getString("phone"));
-				profile.setDeptID(empRs.getInt("departmentid"));
+				profile.setEmpid(empRs.getInt("EMPLOYEEID"));
+				profile.setFirstname(empRs.getString("FIRSTNAME"));
+				profile.setLastName(empRs.getString("LASTNAME"));
+				profile.setBdate(DateWrapper.getDateString(empRs.getDate("DOB")));
+				profile.setJoinDate(DateWrapper.getDateString(empRs.getDate("DOJ")));
+				profile.setLoginID(empRs.getString("LOGINID"));
+				profile.setEmail(empRs.getString("EMAIL"));
+				profile.setPhone(empRs.getString("PHONE"));
+				profile.setDeptID(empRs.getInt("DEPARTMENTID"));
 
-				String ext = empRs.getString("photoext");
-				Blob photo = empRs.getBlob("photo");
+				String ext = empRs.getString("PHOTOEXT");
+				Blob photo = empRs.getBlob("PHOTO");
 
 				String photoName = profile.getLoginID() + "." + ext;
-				FileOutputStream photoOut = new FileOutputStream(path + File.separator + photoName);
-
-				photoOut.write(photo.getBytes(1, (int) photo.length()));
-				photoOut.close();
+//				FileOutputStream photoOut = new FileOutputStream(imageBasePath + File.separator + photoName);
+//
+//				photoOut.write(photo.getBytes(1, (int) photo.length()));
+//				photoOut.close();
 
 				profile.setPhoto(photoName);
-				profile.setGender(empRs.getString("gender"));
+				profile.setGender(empRs.getString("GENDER"));
 			}
 
 			if (profile == null) return null;
 
+			PreparedStatement addrSt = con.prepareStatement(SQL_FIND_ALL_USER_ADDRESSES);
 			addrSt.setInt(1, profile.getEmpid());
 			ResultSet rs = addrSt.executeQuery();
 
 			while (rs.next()) {
-				if (rs.getString("addresstype").equals("home")) {
-					profile.setHome("home");
-					profile.setHno(rs.getString("line1"));
-					profile.setStreet(rs.getString("line2"));
-					profile.setCity(rs.getString("city"));
-					profile.setState(rs.getString("state"));
-					profile.setCountry(rs.getString("country"));
-					profile.setPin(rs.getString("pincode"));
+				if (rs.getString("ADDRESSTYPE").equals("HOME")) {
+					profile.setHome("HOME");
+					profile.setHno(rs.getString("LINE1"));
+					profile.setStreet(rs.getString("LINE2"));
+					profile.setCity(rs.getString("CITY"));
+					profile.setState(rs.getString("STATE"));
+					profile.setCountry(rs.getString("COUNTRY"));
+					profile.setPin(rs.getString("PINCODE"));
 				}
 				else {
-					profile.setContact("personal");
-					profile.setChno(rs.getString("line1"));
-					profile.setCstreet(rs.getString("line2"));
-					profile.setCcity(rs.getString("city"));
-					profile.setCstate(rs.getString("state"));
-					profile.setCcountry(rs.getString("country"));
-					profile.setCpin(rs.getString("pincode"));
+					profile.setContact("PERSONAL");
+					profile.setChno(rs.getString("LINE1"));
+					profile.setCstreet(rs.getString("LINE2"));
+					profile.setCcity(rs.getString("CITY"));
+					profile.setCstate(rs.getString("STATE"));
+					profile.setCcountry(rs.getString("COUNTRY"));
+					profile.setCpin(rs.getString("PINCODE"));
 				}
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			flag = false;
-
-			try {
-				con.rollback();
-			} catch (SQLException se) {
-				se.printStackTrace();
-			}
+			DaoUtils.rollback(con);
+			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return profile;
 	}
 
-
-	// Getting profile
-	@Deprecated
-	public Profile getProfile1(String loginname, String path) {
-		Connection con = null;
-		boolean flag = false;
-
-		Profile rb = new Profile();
-		try {
-			con = getConnection();
-			CallableStatement cs = con.prepareCall(
-					"{call showprofile(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
-
-			/*
-			 * 
-			 * 1 logid EmployeeMaster.loginid%type, 2 pass out
-			 * EmployeeMaster.PASSWORD%type, 3 fname OUT
-			 * EmployeeMaster.FIRSTNAME%type, 4 lname OUT
-			 * EmployeeMaster.LASTNAME%type, 5 db OUT varchar2, 6 emailid OUT
-			 * EmployeeMaster.EMAIL%type, 7 phno OUT EmployeeMaster.phone%type,
-			 * 8 addresshome OUT addresses.ADDRESSTYPE%type, 9 housenohome OUT
-			 * addresses.DoorNO%type, 10 streethome OUT addresses.STREET%type,
-			 * 11 cityhome OUT addresses.CITY%type, 12 statehome OUT
-			 * addresses.STATE%type, 13 countryhome OUT addresses.COUNTRY%type,
-			 * 14 pincodehome OUT addresses.PINCODE%type, 15 addressoffice OUT
-			 * addresses.ADDRESSTYPE%type, 16 housenooffice OUT
-			 * addresses.doorNO%type, 17 streetoffice OUT addresses.STREET%type,
-			 * 18 cityoffice OUT addresses.CITY%type, 19 stateoffice OUT
-			 * addresses.STATE%type, 20 countryoffice OUT
-			 * addresses.COUNTRY%type, 21 pincodeoffice OUT
-			 * addresses.PINCODE%type, 22 addresspersonal OUT
-			 * addresses.ADDRESSTYPE%type, 23 housenopersonal OUT
-			 * addresses.doorNO%type, 24 streetpersonal OUT
-			 * addresses.STREET%type, 25 citypersonal OUT addresses.CITY%type,
-			 * 26 statepersonal OUT addresses.STATE%type, 27 countrypersonal OUT
-			 * addresses.COUNTRY%type, 28 pincodepersonal OUT
-			 * addresses.PINCODE%type, 29 photograph OUT
-			 * EmployeeMaster.PHOTO%type
-			 * 
-			 */
-
-			cs.setString(1, loginname);
-			cs.registerOutParameter(2, Types.VARCHAR);
-			cs.registerOutParameter(3, Types.VARCHAR);
-			cs.registerOutParameter(4, Types.VARCHAR);
-			cs.registerOutParameter(5, Types.VARCHAR);
-			cs.registerOutParameter(6, Types.VARCHAR);
-			cs.registerOutParameter(7, Types.VARCHAR);
-			cs.registerOutParameter(8, Types.VARCHAR);
-			cs.registerOutParameter(9, Types.VARCHAR);
-			cs.registerOutParameter(10, Types.VARCHAR);
-			cs.registerOutParameter(11, Types.VARCHAR);
-			cs.registerOutParameter(12, Types.VARCHAR);
-			cs.registerOutParameter(13, Types.VARCHAR);
-			cs.registerOutParameter(14, Types.VARCHAR);
-			cs.registerOutParameter(15, Types.VARCHAR);
-			cs.registerOutParameter(16, Types.VARCHAR);
-			cs.registerOutParameter(17, Types.VARCHAR);
-			cs.registerOutParameter(18, Types.VARCHAR);
-			cs.registerOutParameter(19, Types.VARCHAR);
-			cs.registerOutParameter(20, Types.VARCHAR);
-			cs.registerOutParameter(21, Types.VARCHAR);
-			cs.registerOutParameter(22, Types.VARCHAR);
-			cs.registerOutParameter(23, Types.VARCHAR);
-			cs.registerOutParameter(24, Types.VARCHAR);
-			cs.registerOutParameter(25, Types.VARCHAR);
-			cs.registerOutParameter(26, Types.VARCHAR);
-			cs.registerOutParameter(27, Types.VARCHAR);
-			cs.registerOutParameter(28, Types.VARCHAR);
-			cs.registerOutParameter(29, Types.BLOB);
-			cs.registerOutParameter(30, Types.VARCHAR); // photo ext
-			cs.registerOutParameter(31, Types.BIGINT); // deptid
-			cs.registerOutParameter(32, Types.INTEGER); // empid
-			cs.execute();
-			/*
-			 * 
-			 * 1 logid EmployeeMaster.loginid%type, 2 pass out
-			 * EmployeeMaster.PASSWORD%type, 3 fname OUT
-			 * EmployeeMaster.FIRSTNAME%type, 4 lname OUT
-			 * EmployeeMaster.LASTNAME%type, 5 db OUT varchar2, 6 emailid OUT
-			 * EmployeeMaster.EMAIL%type, 7 phno OUT EmployeeMaster.phone%type,
-			 * 8 addresshome OUT addresses.ADDRESSTYPE%type, 9 housenohome OUT
-			 * addresses.DoorNO%type, 10 streethome OUT addresses.STREET%type,
-			 * 11 cityhome OUT addresses.CITY%type, 12 statehome OUT
-			 * addresses.STATE%type, 13 countryhome OUT addresses.COUNTRY%type,
-			 * 14 pincodehome OUT addresses.PINCODE%type,
-			 */
-			rb.setLoginID(loginname);
-			rb.setPassword(cs.getString(2));
-			rb.setFirstname(cs.getString(3));
-			rb.setLastname(cs.getString(4));
-			rb.setBdate(cs.getString(5));
-			rb.setEmail(cs.getString(6));
-			rb.setPhone(cs.getString(7));
-
-			rb.setHome(cs.getString(8));
-			rb.setHno(cs.getString(9));
-			rb.setStreet(cs.getString(10));
-			rb.setCity(cs.getString(11));
-			rb.setState(cs.getString(12));
-			rb.setCountry(cs.getString(13));
-			rb.setPin(cs.getString(14));
-			/*
-			 * 
-			 * 15 addressoffice OUT addresses.ADDRESSTYPE%type, 16 housenooffice
-			 * OUT addresses.doorNO%type, 17 streetoffice OUT
-			 * addresses.STREET%type, 18 cityoffice OUT addresses.CITY%type, 19
-			 * stateoffice OUT addresses.STATE%type, 20 countryoffice OUT
-			 * addresses.COUNTRY%type, 21 pincodeoffice OUT
-			 * addresses.PINCODE%type, 22 addresspersonal OUT
-			 * addresses.ADDRESSTYPE%type, 23 housenopersonal OUT
-			 * addresses.doorNO%type, 24 streetpersonal OUT
-			 * addresses.STREET%type, 25 citypersonal OUT addresses.CITY%type,
-			 * 26 statepersonal OUT addresses.STATE%type, 27 countrypersonal OUT
-			 * addresses.COUNTRY%type, 28 pincodepersonal OUT
-			 * addresses.PINCODE%type, 29 photograph OUT
-			 * EmployeeMaster.PHOTO%type
-			 * 
-			 */
-			rb.setContact(cs.getString(15));
-			rb.setChno(cs.getString(16));
-			rb.setCstreet(cs.getString(17));
-			rb.setCcity(cs.getString(18));
-			rb.setCstate(cs.getString(19));
-			rb.setCcountry(cs.getString(20));
-			rb.setCpin(cs.getString(21));
-
-			rb.setOffice(cs.getString(22));
-			rb.setOhno(cs.getString(23));
-			rb.setOstreet(cs.getString(24));
-			rb.setOcity(cs.getString(25));
-			rb.setOstate(cs.getString(26));
-			rb.setOcountry(cs.getString(27));
-			rb.setOpin(cs.getString(28));
-			System.out.println(rb.getHome() + ":" + rb.getContact() + ":" + rb.getOffice());
-
-			Blob b = cs.getBlob(29);
-			String photoName = loginname + "." + cs.getString(30);
-
-			byte b1[] = b.getBytes(1, (int) b.length());
-			OutputStream fout = new FileOutputStream(path + File.separator + photoName);
-			fout.write(b1);
-
-			rb.setPhoto(photoName);
-			rb.setDeptID((int) cs.getLong(31));
-			rb.setEmpid(cs.getInt(32));
-
-			fout.close();
-		}
-
-		catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogSevere(e);
-		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
-
-		}
-		return rb;
-	} // Modify Profile
-
-
-	private String[] getAddrSql(ProfileData.Address[] list) {
-
-		String sqlh = "update addresses set ";
-		sqlh += "line1='" + list[0].getLine1() + "'";
-		sqlh += ",line2='" + list[0].getLine2() + "'";
-		sqlh += ",city='" + list[0].getCity() + "'";
-		sqlh += ",state='" + list[0].getState() + "'";
-		sqlh += ",country='" + list[0].getCountry() + "'";
-		sqlh += ",pincode='" + list[0].getPin() + "'";
-		sqlh += " where addresstype='home' and employeeid=";
+	private static String[] getAddrSql(ProfileData.Address[] list) {
+		String sqlh = "UPDATE ADDRESSES SET ";
+		sqlh += "LINE1='" + list[0].getLine1() + "'";
+		sqlh += ",LINE2='" + list[0].getLine2() + "'";
+		sqlh += ",CITY='" + list[0].getCity() + "'";
+		sqlh += ",STATE='" + list[0].getState() + "'";
+		sqlh += ",COUNTRY='" + list[0].getCountry() + "'";
+		sqlh += ",PINCODE='" + list[0].getPin() + "'";
+		sqlh += " WHERE ADDRESSTYPE='HOME' AND EMPLOYEEID=";
 
 		String sqlp = "";
 		if (list[1].getLine1() != null && list[1].getLine1().length() > 0) {
-			sqlp = "update addresses set ";
-			sqlp += "line1='" + list[1].getLine1() + "'";
-			sqlp += ",line2='" + list[1].getLine2() + "'";
-			sqlp += ",city='" + list[1].getCity() + "'";
-			sqlp += ",state='" + list[1].getState() + "'";
-			sqlp += ",country='" + list[1].getCountry() + "'";
-			sqlp += ",pincode='" + list[1].getPin() + "'";
-			sqlp += " where addresstype='personal' and employeeid=";
+			sqlp = "UPDATE ADDRESSES SET ";
+			sqlp += "LINE1='" + list[1].getLine1() + "'";
+			sqlp += ",LINE2='" + list[1].getLine2() + "'";
+			sqlp += ",CITY='" + list[1].getCity() + "'";
+			sqlp += ",STATE='" + list[1].getState() + "'";
+			sqlp += ",COUNTRY='" + list[1].getCountry() + "'";
+			sqlp += ",PINCODE='" + list[1].getPin() + "'";
+			sqlp += " WHERE ADDRESSTYPE='PERSONAL' AND EMPLOYEEID=";
 		}
 
 		return new String[] { sqlh, sqlp };
 	}
-
 
 	public boolean updateProfile(ProfileData data) {
 		boolean status = false;
@@ -442,22 +231,22 @@ public class ProfileDAO extends AbstractDAO {
 		String profsql = "";
 		boolean photoExist = false;
 
-		if (data.getEmail() != null) profsql += ", email='" + data.getEmail() + "'";
-		if (data.getMobile() != null) profsql += ", phone='" + data.getMobile() + "'";
+		if (data.getEmail() != null) profsql += ", EMAIL='" + data.getEmail() + "'";
+		if (data.getMobile() != null) profsql += ", PHONE='" + data.getMobile() + "'";
 		if (data.getImgPart() != null && data.getImgPart().getSize() > 0) {
 			photoExist = true;
 			Part part = data.getImgPart();
 			String ext = part.getContentType().split("/")[1];
 			String name = part.getName().substring(part.getName().lastIndexOf("/") + 1);
-			profsql += ", photoext='" + ext + "'";
-			profsql += ", photo=?";
+			profsql += ", PHOTOEXT='" + ext + "'";
+			profsql += ", PHOTO=?";
 		}
 
-		int empId = getEmpIdFromLogin(data.getLoginId());
+		int empId = findEmpIdByLoginId(data.getLoginId());
 		String[] addrSql = getAddrSql(data.getList());
 
-		profsql = "update employeemaster set doj=doj " + profsql +
-				" where employeeid=" + empId;
+		profsql = "UPDATE EMPLOYEEMASTER SET DOJ=DOJ " + profsql +
+				" WHERE EMPLOYEEID=" + empId;
 
 		// System.out.println("ProfSql: " + profsql);
 		// System.out.println("Home: " + addrSql[0]);
@@ -496,55 +285,37 @@ public class ProfileDAO extends AbstractDAO {
 				con.rollback();
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-			e.printStackTrace();
+			DaoUtils.rollback(con);
+			LoggerManager.writeLogSevere(e);
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
+	private static final String SQL_FIND_LOGIN_ID_BY_EMPLOYEE_ID = ""
+			+ "SELECT LOGINID FROM EMPLOYEEMASTER WHERE EMPLOYEEID=?";
 
-	// getting inchargeUserName
-	public String getUserID(int empid) {
+	public String findLoginIdByEmployeeId(int empid) {
 		Connection con = null;
-		boolean flag = false;
-		String loginid = null;
 
 		try {
 			con = getConnection();
 
-			Statement st = con.createStatement();
-			ResultSet rs = st
-					.executeQuery("SELECT loginid from EmployeeMaster where EmployeeID=" + empid);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_LOGIN_ID_BY_EMPLOYEE_ID);
+			ps.setInt(1, empid);
+			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				loginid = rs.getString(1);
-
+				return rs.getString(1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return loginid;
+		return null;
 	}
 
 
@@ -710,15 +481,18 @@ public class ProfileDAO extends AbstractDAO {
 		return flag;
 	}
 
+	
+	private static final String SQL_FIND_ALL_EMPLOYEES = ""
+			+ "SELECT EMPLOYEEID,LOGINID FROM EMPLOYEEMASTER";
 
-	public List<Profile> getEmpList() {
+	public List<Profile> findAllEmployees() {
 		List<Profile> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
 			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery("SELECT EmployeeID,loginid from EmployeeMaster");
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_EMPLOYEES);
 
 			while (rs.next()) {
 				Profile profile = new Profile();
@@ -728,30 +502,25 @@ public class ProfileDAO extends AbstractDAO {
 				list.add(profile);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_FIND_ALL_EMPLOYEES_BY_DEPARTMENT_ID = ""
+			+ " SELECT EMPLOYEEID,LOGINID,FIRSTNAME,LASTNAME "
+			+ " FROM EMPLOYEEMASTER WHERE DEPARTMENTID=?";
 
-	public List<Profile> getEmpList(String deptFilter) {
+	public List<Profile> findAllEmployeesByDepartmentId(String departmentId) {
 		List<Profile> list = new ArrayList<>();
 		Connection con = null;
-		boolean flag = false;
 
 		try {
 			con = getConnection();
-			final String sql = "SELECT employeeid,loginid,firstname,lastname from EmployeeMaster where departmentid=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
-			pstmt.setString(1, deptFilter);
-
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_ALL_EMPLOYEES_BY_DEPARTMENT_ID);
+			pstmt.setString(1, departmentId);
 			ResultSet rs = pstmt.executeQuery();
 
 			while (rs.next()) {
@@ -764,28 +533,24 @@ public class ProfileDAO extends AbstractDAO {
 				list.add(profile);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_FIND_ALL_ADMINS = ""
+			+ "SELECT EMPLOYEEID,LOGINID FROM EMPLOYEEMASTER WHERE TYPE='ADMIN'";
 
-	public List<Profile> getAdminList() {
+	public List<Profile> findAllAdmins() {
 		List<Profile> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
 			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(
-					"SELECT EmployeeID,loginid from EmployeeMaster where type='admin'");
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_ADMINS);
 			while (rs.next()) {
 				Profile profile = new Profile();
 				profile.setEmpid(rs.getInt(1));
@@ -794,113 +559,93 @@ public class ProfileDAO extends AbstractDAO {
 				list.add(profile);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
+	private static final String SQL_DOES_PROFILE_EXIST_BY_EMPLOYEE_ID = ""
+			+ "SELECT EMPLOYEEID FROM EMPLOYEEMASTER WHERE EMPLOYEEID=?";
 
-	public boolean profileIdExists(int empId) {
+	public boolean doesProfileExists(int empId) {
 		Connection con = null;
 		boolean status = false;
 
 		try {
 			con = getConnection();
-			String sql = "select employeeid from employeemaster where employeeid=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_DOES_PROFILE_EXIST_BY_EMPLOYEE_ID);
 			pstmt.setInt(1, empId);
 
 			ResultSet rs = pstmt.executeQuery();
-
-			if (rs.next()) {
-				status = true;
-			}
+			status = rs.next();
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
 
-	public int getEmpIdFromLogin(String loginId) {
+	private static final String SQL_FIND_EMPLOYEE_ID_BY_LOGIN_ID = ""
+			+ "SELECT EMPLOYEEID FROM EMPLOYEEMASTER WHERE LOGINID=?";
+
+	public int findEmpIdByLoginId(String loginId) {
 		Connection con = null;
-		int empId = 0;
 
 		try {
 			con = getConnection();
-			String sql = "select employeeid from employeemaster where loginid=?";
-
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_EMPLOYEE_ID_BY_LOGIN_ID);
 			pstmt.setString(1, loginId);
 
 			ResultSet rs = pstmt.executeQuery();
 
 			if (rs.next()) {
-				empId = rs.getInt(1);
+				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return empId;
+		return 0;
 	}
 
+	private static final String SQL_DOES_PROFILE_EXISTS_BY_LOGIN_ID = ""
+			+ "SELECT EMPLOYEEID FROM EMPLOYEEMASTER WHERE LOGINID=?";
 
-	public boolean profileLoginExists(String loginId) {
+	public boolean doesProfileExistByLoginId(String loginId) {
 		Connection con = null;
-		boolean status = false;
 
 		try {
 			con = getConnection();
-			String sql = "select employeeid from employeemaster where loginid=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_DOES_PROFILE_EXISTS_BY_LOGIN_ID);
 			pstmt.setString(1, loginId);
 
 			ResultSet rs = pstmt.executeQuery();
-
-			if (rs.next()) {
-				status = true;
-			}
+			return rs.next();
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return status;
+		return false;
 	}
 
+	private static final String SQL_FIND_ALL_PROFILES = ""
+			+ " SELECT D.DEPARTMENTABBR,E.* FROM "
+			+ " EMPLOYEEMASTER E "
+			+ " 	INNER JOIN DEPARTMENTMASTER D ON D.DEPARTMENTID=E.DEPARTMENTID "
+			+ " ORDER BY D.DEPARTMENTNAME ASC, E.FIRSTNAME ASC, E.LASTNAME ASC ";
 
-	public List<Profile> getAllEmpProfiles(String path) {
+	public List<Profile> getAllEmpProfiles(String imageBasePath) {
 		List<Profile> list = new ArrayList<>();
 		Connection con = null;
 
@@ -908,34 +653,29 @@ public class ProfileDAO extends AbstractDAO {
 			con = getConnection();
 
 			Statement st = con.createStatement();
-			String sql = "select d.departmentabbr,e.* from " +
-					" employeemaster e " +
-					" 	inner join departmentmaster d on d.departmentid=e.departmentid " +
-					" order by d.departmentname asc, e.firstname asc, e.lastname asc ";
 
-			ResultSet rs = st.executeQuery(sql);
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_PROFILES);
 
 			while (rs.next()) {
 				Profile profile = new Profile();
-				int c = 1;
-				profile.setDeptName(rs.getString("departmentabbr"));
-				profile.setEmpid(rs.getInt("employeeid"));
-				profile.setFirstname(rs.getString("firstname"));
-				profile.setLastName(rs.getString("lastname"));
-				String date = DateWrapper.parseDate(rs.getDate("dob")).trim();
-				profile.setLoginID(rs.getString("loginid"));
-				profile.setEmail(rs.getString("email"));
-				profile.setPhone(rs.getString("phone"));
-				profile.setDeptID(rs.getInt("departmentid"));
-				profile.setGender(rs.getString("gender"));
+				profile.setDeptName(rs.getString("DEPARTMENTABBR"));
+				profile.setEmpid(rs.getInt("EMPLOYEEID"));
+				profile.setFirstname(rs.getString("FIRSTNAME"));
+				profile.setLastName(rs.getString("LASTNAME"));
+				String date = DateWrapper.parseDate(rs.getDate("DOB")).trim();
+				profile.setLoginID(rs.getString("LOGINID"));
+				profile.setEmail(rs.getString("EMAIL"));
+				profile.setPhone(rs.getString("PHONE"));
+				profile.setDeptID(rs.getInt("DEPARTMENTID"));
+				profile.setGender(rs.getString("GENDER"));
 
 				profile.setBirthDate(date);
 
-				Blob b = rs.getBlob("photo");
-				String photoName = rs.getString("loginid") + "." + rs.getString("photoext");
+				Blob b = rs.getBlob("PHOTO");
+				String photoName = rs.getString("LOGINID") + "." + rs.getString("PHOTOEXT");
 
 				byte b1[] = b.getBytes(1, (int) b.length());
-				OutputStream fout = new FileOutputStream(path + "/" + photoName);
+				OutputStream fout = new FileOutputStream(imageBasePath + "/" + photoName);
 				fout.write(b1);
 				fout.close();
 
@@ -944,14 +684,9 @@ public class ProfileDAO extends AbstractDAO {
 				list.add(profile);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}

@@ -1,97 +1,53 @@
 package com.jk.travel.dao;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Profile;
 
 public class SecurityDAO extends AbstractDAO {
-	private Connection con;
-	private String desc;
-	private boolean flag;
 
-
-	public SecurityDAO() {
-	}
-
-
-	// Login Check
+	private static final String SQL_FIND_USER_ROLE_BY_LOGIN_ID_AND_PASSWORD = ""
+			+ "SELECT TYPE FROM EMPLOYEEMASTER WHERE LOGINID=? AND PASSWORD=?";
+	
 	public String loginCheck(Profile regbean) {
-		String loginid = regbean.getLoginID();
-		String password = regbean.getPassword();
-		String role = "";
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select type from employeemaster where loginid=? and password=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
-
-			pstmt.setString(1, loginid);
-			pstmt.setString(2, password);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_USER_ROLE_BY_LOGIN_ID_AND_PASSWORD);
+			pstmt.setString(1, regbean.getLoginID());
+			pstmt.setString(2, regbean.getPassword());
 
 			ResultSet rs = pstmt.executeQuery();
-
 			if (rs.next()) {
-				role = rs.getString(1);
+				return rs.getString(1);
 			}
 
 		} catch (SQLException ex) {
-			ex.printStackTrace();
 			LoggerManager.writeLogSevere(ex);
-			desc = "Database Connection problem";
-			flag = false;
 		} finally {
-			if (con != null) {
-				try {
-					con.close();
-				} catch (Exception e) {
-					e.printStackTrace();
-					LoggerManager.writeLogSevere(e);
-				}
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return role;
+		return "";
 	}
 
+	
+	private static final String SQL_CHANGE_PASSWORD = ""
+			+ "UPDATE EMPLOYEEMASTER SET PASSWORD=? WHERE LOGINID=? AND PASSWORD=?";
 
-	// Method for login audit
-	@Deprecated
-	public void loginaudit(String loginid) {
-		try {
-			con = getConnection();
-			CallableStatement cstmt = con.prepareCall("{call signoutprocedure(?)}");
-			cstmt.setString(1, loginid);
-
-			// System.out.println("in loginaudit");
-			cstmt.execute();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
-		}
-	}
-
-
-	// Change Password
-	public boolean changePassword(String loginId, String curPwd, String newPwd) {
+	public boolean updatePassword(String loginId, String curPwd, String newPwd) {
+		Connection con = null;
+		boolean flag = false;
 		try {
 			con = getConnection();
 			con.setAutoCommit(false);
 
-			PreparedStatement pstmt = con
-					.prepareStatement(
-							"update EmployeeMaster set password=? where loginid=? and password=?");
+			PreparedStatement pstmt = con.prepareStatement(SQL_CHANGE_PASSWORD);
 
 			pstmt.setString(1, newPwd);
 			pstmt.setString(2, loginId);
@@ -106,33 +62,24 @@ public class SecurityDAO extends AbstractDAO {
 				con.rollback();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-			flag = false;
-
-			try {
-				con.rollback();
-			} catch (SQLException sex) {
-				sex.printStackTrace();
-				LoggerManager.writeLogSevere(sex);
-			}
+			DaoUtils.rollback(con);
+			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
+			DaoUtils.closeCon(con);
 		}
 		return flag;
 	}
 
+	private static final String SQL_UPDATE_SECRET_QUESTION = ""
+			+ "UPDATE EMPLOYEEMASTER SET S_QUES=?,S_ANS=? WHERE LOGINID=? AND PASSWORD=?";
 
-	// Change Secret Question
-	public boolean changeQuestion(String loginId, String password, String secQues, String secAns) {
+	public boolean updateSecretQuestion(String loginId, String password, String secQues, String secAns) {
+		Connection con = null;
+		boolean flag = false;
 		try {
 			con = getConnection();
 			con.setAutoCommit(false);
-			PreparedStatement pstmt = con.prepareStatement(
-					"update EmployeeMaster set s_ques=?,s_ans=? where loginid=? and password=?");
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_SECRET_QUESTION);
 
 			pstmt.setString(1, secQues);
 			pstmt.setString(2, secAns);
@@ -148,46 +95,25 @@ public class SecurityDAO extends AbstractDAO {
 				con.rollback();
 			}
 
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-			LoggerManager.writeLogSevere(ex);
-			flag = false;
-			try {
-				con.rollback();
-			} catch (SQLException sex) {
-				LoggerManager.writeLogSevere(sex);
-			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogSevere(e);
-			flag = false;
-			try {
-				con.rollback();
-			} catch (SQLException sex) {
-				LoggerManager.writeLogSevere(sex);
-			}
 		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
-
+			DaoUtils.closeCon(con);
 		}
 
 		return flag;
 	}
 
+	private static final String SQL_FIND_USER_SECRETS_BY_LOGIN_ID = ""
+			+ "SELECT PASSWORD,S_QUES,S_ANS FROM EMPLOYEEMASTER WHERE LOGINID=?";
 
-	// Recover Password using Existed Question
 	public String recoverPasswordByQuestion(String loginId, String secQues, String secAns) {
-		String password = null;
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			con.setAutoCommit(true);
-			PreparedStatement pstmt = con.prepareStatement(
-					"select password,s_ques,s_ans from EmployeeMaster where loginid=?");
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_USER_SECRETS_BY_LOGIN_ID);
 
 			pstmt.setString(1, loginId);
 
@@ -195,60 +121,41 @@ public class SecurityDAO extends AbstractDAO {
 
 			if (rs.next()) {
 				if (rs.getString(2).equals(secQues) && rs.getString(3).equals(secAns)) {
-					password = rs.getString(1);
+					return rs.getString(1);
 				}
 			}
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-			LoggerManager.writeLogSevere(ex);
 		} catch (Exception e) {
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return password;
+		return null;
 	}
 
+	private static final String SQL_DOES_LOGIN_ID_EXISTS = ""
+			+ "SELECT LOGINID FROM EMPLOYEEMASTER WHERE LOGINID=?";
 
-	// check useravailability
-	public String checkUser(String userName) {
-		String user = null;
-		// System.out.println("username" + userName);
+	public String doesLoginIdExist(String userName) {
+		Connection con = null;
 		try {
 			con = getConnection();
 
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(
-					"select loginid from EmployeeMaster where loginid=+'" + userName + "'");
+			PreparedStatement ps = con.prepareStatement(SQL_DOES_LOGIN_ID_EXISTS);
+			ps.setString(1, userName);
+			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				user = rs.getString(1);
 				System.out.println("loginid alredy exist" + userName);
+				return rs.getString(1);
 			}
-			else
-				user = null;
-
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-			LoggerManager.writeLogSevere(ex);
-			user = null;
 		} catch (Exception e) {
 			LoggerManager.writeLogSevere(e);
-			user = null;
 		} finally {
-			try {
-				con.close();
-			} catch (Exception e) {
-				LoggerManager.writeLogSevere(e);
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return user;
+		return null;
 	}
 
 }

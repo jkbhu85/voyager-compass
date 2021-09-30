@@ -21,7 +21,6 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.2.5</version>
-            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -30,11 +29,11 @@
             <version>1.2</version>
         </dependency>
 
-
         <dependency>
-            <groupId>com.oracle.database.jdbc</groupId>
-            <artifactId>ojdbc8</artifactId>
-            <version>21.3.0.0</version>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.26</version>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -49,7 +48,6 @@
             <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
-
 
         <dependency>
             <groupId>javax.servlet.jsp</groupId>

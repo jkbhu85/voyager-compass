@@ -9,17 +9,17 @@ import java.util.List;
 import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Work;
 
-public class WorkDAO extends AbstractDAO {
+public class WorkDAO extends AbstractDAO {	
 
-	public boolean insert(Work work) {
-		boolean status = false;
+	private static final String SQL_INSERT_INTO_WORK = "INSERT INTO WORKS VALUES(?, ?, ?, ?, ?, ?)";
+
+	public boolean insertWork(Work work) {
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "insert into works values(WORK_ID_SEQ.nextval, ?, ?, ?, ?, ?, ?)";
 
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_INSERT_INTO_WORK);
 			int col = 1;
 			ps.setInt(col++, work.getCntId());
 			ps.setInt(col++, work.getInchId());
@@ -28,145 +28,146 @@ public class WorkDAO extends AbstractDAO {
 			ps.setString(col++, work.getDescription());
 			ps.setInt(col++, work.getStatusId());
 
-			status = ps.executeUpdate() > 0;
-
+			return ps.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return status;
+		return false;
 	}
 
+	private static final String SQL_UPDATE_WORK = ""
+			+ "UPDATE WORKS SET WORK_STATUS=?, WORK_DESC=? WHERE WORK_ID=?";
 
-	public boolean update(int workId, int status, String desc) {
-		boolean result = false;
+	public boolean updateWork(int workId, int status, String desc) {
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "update works set work_status=?, work_desc=? where work_id=?";
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_UPDATE_WORK);
 			ps.setInt(1, status);
 			ps.setString(2, desc);
 			ps.setInt(3, workId);
 
-			result = ps.executeUpdate() > 0;
-
+			return ps.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return result;
+		return false;
 	}
 
+	private static final String SQL_FIND_WORK_BY_ID = ""
+			+ " SELECT "
+			+ "   W.*, E.FIRSTNAME || ' ' || E.LASTNAME NAME, C.CNT_NAME "
+			+ " FROM "
+			+ "   WORKS W "
+			+ " INNER JOIN COUNTRIES_MASTER C "
+			+ "   ON W.CNT_WORK_FK = C.CNT_ID "
+			+ " INNER JOIN EMPLOYEEMASTER E "
+			+ "   ON W.EMP_WORK_INCH_FK = E.EMPLOYEEID "
+			+ " WHERE "
+			+ "   W.WORK_ID = ? ";
 
 	public Work get(int workId) {
-		Work work = null;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select w.*, e.firstname || ' ' || e.lastname \"name\", c.cnt_name from "
-					+ " works w inner join countries_master c on w.cnt_work_fk = c.cnt_id "
-					+ " inner join employeemaster e on w.emp_work_inch_fk = e.employeeid "
-					+ " where w.work_id = ?";
-
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_WORK_BY_ID);
 			ps.setInt(1, workId);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				work = new Work();
+				Work work = new Work();
 
-				work.setWorkId(rs.getInt("work_id"));
-				work.setCntId(rs.getInt("cnt_work_fk"));
-				work.setInchId(rs.getInt("emp_work_inch_fk"));
-				work.setTitle(rs.getString("work_title"));
-				work.setRespb(rs.getString("work_rspb"));
-				work.setDescription(rs.getString("work_desc"));
-				work.setStatusId(rs.getInt("work_status"));
+				work.setWorkId(rs.getInt("WORK_ID"));
+				work.setCntId(rs.getInt("CNT_WORK_FK"));
+				work.setInchId(rs.getInt("EMP_WORK_INCH_FK"));
+				work.setTitle(rs.getString("WORK_TITLE"));
+				work.setRespb(rs.getString("WORK_RSPB"));
+				work.setDescription(rs.getString("WORK_DESC"));
+				work.setStatusId(rs.getInt("WORK_STATUS"));
 
-				work.setInchName(rs.getString("name"));
-				work.setCntName(rs.getString("cnt_name"));
+				work.setInchName(rs.getString("NAME"));
+				work.setCntName(rs.getString("CNT_NAME"));
+				return work;
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return work;
-
+		return null;
 	}
 
+	private static final String SQL_FIND_ALL_WORKS = ""
+			+ " SELECT "
+			+ "   W.*, E.FIRSTNAME || ' ' || E.LASTNAME NAME, C.CNT_NAME "
+			+ " FROM "
+			+ " WORKS W "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON W.CNT_WORK_FK = C.CNT_ID "
+			+ "   INNER JOIN EMPLOYEEMASTER E "
+			+ "     ON W.EMP_WORK_INCH_FK = E.EMPLOYEEID "
+			+ " ORDER BY "
+			+ "   W.WORK_STATUS ";
 
-	public List<Work> getAll() {
+
+	public List<Work> findAllWorks() {
 		List<Work> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select w.*, e.firstname || ' ' || e.lastname \"name\", c.cnt_name from "
-					+ " works w inner join countries_master c on w.cnt_work_fk = c.cnt_id "
-					+ " inner join employeemaster e on w.emp_work_inch_fk = e.employeeid "
-					+ " order by w.work_status";
-
-			PreparedStatement ps = con.prepareStatement(sql);
-
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL_WORKS);
 			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()) {
 				Work work = new Work();
 
-				work.setWorkId(rs.getInt("work_id"));
-				work.setCntId(rs.getInt("cnt_work_fk"));
-				work.setInchId(rs.getInt("emp_work_inch_fk"));
-				work.setTitle(rs.getString("work_title"));
-				work.setRespb(rs.getString("work_rspb"));
-				work.setDescription(rs.getString("work_desc"));
-				work.setStatusId(rs.getInt("work_status"));
+				work.setWorkId(rs.getInt("WORK_ID"));
+				work.setCntId(rs.getInt("CNT_WORK_FK"));
+				work.setInchId(rs.getInt("EMP_WORK_INCH_FK"));
+				work.setTitle(rs.getString("WORK_TITLE"));
+				work.setRespb(rs.getString("WORK_RSPB"));
+				work.setDescription(rs.getString("WORK_DESC"));
+				work.setStatusId(rs.getInt("WORK_STATUS"));
 
-				work.setInchName(rs.getString("name"));
-				work.setCntName(rs.getString("cnt_name"));
+				work.setInchName(rs.getString("NAME"));
+				work.setCntName(rs.getString("CNT_NAME"));
 
 				list.add(work);
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
 
+	private static final String SQL_FIND_ALL_WORKS_BY_COUNTRY_ID = ""
+			+ " SELECT "
+			+ "   W.*, E.FIRSTNAME || ' ' || E.LASTNAME NAME, C.CNT_NAME "
+			+ " FROM "
+			+ "   WORKS W "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON W.CNT_WORK_FK = C.CNT_ID "
+			+ "   INNER JOIN EMPLOYEEMASTER E "
+			+ "     ON W.EMP_WORK_INCH_FK = E.EMPLOYEEID "
+			+ " WHERE "
+			+ "   W.CNT_WORK_FK=? "
+			+ " ORDER BY "
+			+ "   W.WORK_STATUS ";
 
 	public List<Work> getCountryWise(int countryId) {
 		List<Work> list = new ArrayList<>();
@@ -174,173 +175,164 @@ public class WorkDAO extends AbstractDAO {
 
 		try {
 			con = getConnection();
-			String sql = "select w.*, e.firstname || ' ' || e.lastname \"name\", c.cnt_name from "
-					+ " works w inner join countries_master c on w.cnt_work_fk = c.cnt_id "
-					+ " inner join employeemaster e on w.emp_work_inch_fk = e.employeeid "
-					+ " where w.cnt_work_fk=? order by w.work_status";
 
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL_WORKS_BY_COUNTRY_ID);
 			ps.setInt(1, countryId);
-
 			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()) {
 				Work work = new Work();
 
-				work.setWorkId(rs.getInt("work_id"));
-				work.setCntId(rs.getInt("cnt_work_fk"));
-				work.setInchId(rs.getInt("emp_work_inch_fk"));
-				work.setTitle(rs.getString("work_title"));
-				work.setRespb(rs.getString("work_rspb"));
-				work.setDescription(rs.getString("work_desc"));
-				work.setStatusId(rs.getInt("work_status"));
+				work.setWorkId(rs.getInt("WORK_ID"));
+				work.setCntId(rs.getInt("CNT_WORK_FK"));
+				work.setInchId(rs.getInt("EMP_WORK_INCH_FK"));
+				work.setTitle(rs.getString("WORK_TITLE"));
+				work.setRespb(rs.getString("WORK_RSPB"));
+				work.setDescription(rs.getString("WORK_DESC"));
+				work.setStatusId(rs.getInt("WORK_STATUS"));
 
-				work.setInchName(rs.getString("name"));
-				work.setCntName(rs.getString("cnt_name"));
+				work.setInchName(rs.getString("NAME"));
+				work.setCntName(rs.getString("CNT_NAME"));
 
 				list.add(work);
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
 
+	private static final String SQL_FIND_ALL_WORKS_BY_INCHARGE_AND_STATUS = ""
+			+ " SELECT "
+			+ "   W.*, E.FIRSTNAME || ' ' || E.LASTNAME NAME, C.CNT_NAME "
+			+ " FROM "
+			+ "   WORKS W "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON W.CNT_WORK_FK = C.CNT_ID "
+			+ "   INNER JOIN EMPLOYEEMASTER E "
+			+ "     ON W.EMP_WORK_INCH_FK = E.EMPLOYEEID "
+			+ " WHERE "
+			+ "   W.EMP_WORK_INCH_FK=? "
+			+ "   AND W.WORK_STATUS <= ? "
+			+ " ORDER BY W.WORK_STATUS ";
 
-	public List<Work> getInchargeWise(int inchId, int statusFilter) {
+	public List<Work> findAllWorksByInchargeAndStatus(int inchargeId, int workStatus) {
 		List<Work> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "" +
-					" select w.*, e.firstname || ' ' || e.lastname \"name\", c.cnt_name from " +
-					" works w " +
-					" inner join countries_master c on w.cnt_work_fk = c.cnt_id " +
-					" inner join employeemaster e on w.emp_work_inch_fk = e.employeeid " +
-					" where w.emp_work_inch_fk=? " +
-					"    and w.work_status <= ? " +
-					" order by w.work_status";
 
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL_WORKS_BY_INCHARGE_AND_STATUS);
 			int col = 1;
-			ps.setInt(col++, inchId);
-			ps.setInt(col++, statusFilter);
+			ps.setInt(col++, inchargeId);
+			ps.setInt(col++, workStatus);
 
 			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()) {
 				Work work = new Work();
 
-				work.setWorkId(rs.getInt("work_id"));
-				work.setCntId(rs.getInt("cnt_work_fk"));
-				work.setInchId(rs.getInt("emp_work_inch_fk"));
-				work.setTitle(rs.getString("work_title"));
-				work.setRespb(rs.getString("work_rspb"));
-				work.setDescription(rs.getString("work_desc"));
-				work.setStatusId(rs.getInt("work_status"));
+				work.setWorkId(rs.getInt("WORK_ID"));
+				work.setCntId(rs.getInt("CNT_WORK_FK"));
+				work.setInchId(rs.getInt("EMP_WORK_INCH_FK"));
+				work.setTitle(rs.getString("WORK_TITLE"));
+				work.setRespb(rs.getString("WORK_RSPB"));
+				work.setDescription(rs.getString("WORK_DESC"));
+				work.setStatusId(rs.getInt("WORK_STATUS"));
 
-				work.setInchName(rs.getString("name"));
-				work.setCntName(rs.getString("cnt_name"));
+				work.setInchName(rs.getString("NAME"));
+				work.setCntName(rs.getString("CNT_NAME"));
 
 				list.add(work);
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
 
+	private static final String SQL_FIND_ALL_WORKS_BY_EMPLOYEE_ID_AND_STATUS = ""
+			+ " SELECT "
+			+ "   W.*, C.CNT_NAME, I.FIRSTNAME || ' ' || I.LASTNAME INCH "
+			+ " FROM "
+			+ "   WORKS W "
+			+ "   INNER JOIN TRAVELMASTER T "
+			+ "     ON T.WORKID = W.WORK_ID "
+			+ "   INNER JOIN EMPLOYEEMASTER E "
+			+ "     ON E.EMPLOYEEID = T.EMPLOYEEID "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON C.CNT_ID = W.CNT_WORK_FK "
+			+ "   INNER JOIN EMPLOYEEMASTER I "
+			+ "     ON I.EMPLOYEEID = W.EMP_WORK_INCH_FK "
+			+ " WHERE "
+			+ "   W.WORK_STATUS > 1 "
+			+ "   AND E.EMPLOYEEID = ? "
+			+ "   AND W.WORK_STATUS >= ? "
+			+ "   AND W.WORK_STATUS <= ? "
+			+ " ORDER BY "
+			+ "   W.WORK_STATUS ASC, "
+			+ "   C.CNT_NAME ASC ";
 
 	/**
-	 * Returns all works whoose status is less than or equal to
+	 * Returns all works whose status is less than or equal to
 	 * {@code statusFilter}.
 	 * 
-	 * @param empId
+	 * @param employeeId
 	 *            ID of the employee
-	 * @param statusFilter
+	 * @param workStatus
 	 *            maximum value for status
-	 * @return all works whoose status is less than or equal to
+	 * @return all works whose status is less than or equal to
 	 *         {@code statusFilter}.
 	 */
-	public List<Work> getEmpWise(int empId, int statusFilter) {
+	public List<Work> findAllWorksByEmployeeIdAndStatus(int employeeId, int workStatus) {
 		List<Work> list = new ArrayList<>();
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "" +
-					" select w.*, c.CNT_NAME, i.FIRSTNAME || ' ' || i.LASTNAME \"inch\" from  " +
-					"    WORKS w " +
-					"    inner join TRAVELMASTER t on t.WORKID = w.WORK_ID " +
-					"    inner join EMPLOYEEMASTER e on e.EMPLOYEEID = t.EMPLOYEEID " +
-					"    inner join COUNTRIES_MASTER c on c.CNT_ID = w.CNT_WORK_FK " +
-					"    inner join EMPLOYEEMASTER i on i.EMPLOYEEID = w.EMP_WORK_INCH_FK " +
-					" where " +
-					"    w.WORK_STATUS > 1 " +
-					"    and e.employeeid = ? " +
-					"    and w.work_status >= ? " +
-					"    and w.work_status <= ? " +
-					" order by w.WORK_STATUS asc, c.CNT_NAME asc ";
 
-			PreparedStatement ps = con.prepareStatement(sql);
-			ps.setInt(1, empId);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_ALL_WORKS_BY_EMPLOYEE_ID_AND_STATUS);
+			ps.setInt(1, employeeId);
 			ps.setInt(2, Work.STATUS_PREPARED);
-			ps.setInt(3, statusFilter);
+			ps.setInt(3, workStatus);
 
 			ResultSet rs = ps.executeQuery();
 
 			while (rs.next()) {
 				Work work = new Work();
 
-				work.setWorkId(rs.getInt("work_id"));
-				work.setCntId(rs.getInt("cnt_work_fk"));
-				work.setInchId(rs.getInt("emp_work_inch_fk"));
-				work.setTitle(rs.getString("work_title"));
-				work.setRespb(rs.getString("work_rspb"));
-				work.setDescription(rs.getString("work_desc"));
-				work.setStatusId(rs.getInt("work_status"));
+				work.setWorkId(rs.getInt("WORK_ID"));
+				work.setCntId(rs.getInt("CNT_WORK_FK"));
+				work.setInchId(rs.getInt("EMP_WORK_INCH_FK"));
+				work.setTitle(rs.getString("WORK_TITLE"));
+				work.setRespb(rs.getString("WORK_RSPB"));
+				work.setDescription(rs.getString("WORK_DESC"));
+				work.setStatusId(rs.getInt("WORK_STATUS"));
 
-				work.setInchName(rs.getString("inch"));
-				work.setCntName(rs.getString("cnt_name"));
+				work.setInchName(rs.getString("INCH"));
+				work.setCntName(rs.getString("CNT_NAME"));
 
 				list.add(work);
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
 
 
-	public boolean exists(int workId) {
+	public boolean doesWorkExistById(int workId) {
 		boolean status = false;
 		Connection con = null;
 
@@ -357,47 +349,36 @@ public class WorkDAO extends AbstractDAO {
 			}
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
+	private static final String sql = ""
+			+ "SELECT EMP_WORK_INCH_FK FROM WORKS WHERE WORK_ID=?";
 
-	public int getInch(int workId) {
-		int inchId = 0;
+	public int findInchargeOfWork(int workId) {
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select emp_work_inch_fk from works where work_id=?";
 			PreparedStatement ps = con.prepareStatement(sql);
 			ps.setInt(1, workId);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				inchId = rs.getInt(1);
+				return rs.getInt(1);
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return inchId;
+		return 0;
 	}
 }

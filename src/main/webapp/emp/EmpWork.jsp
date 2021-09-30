@@ -39,11 +39,11 @@
 <div class="page-content">
 	
 <%
-String loginId = (String) session.getAttribute("user");
-ProfileDAO profileDb = new ProfileDAO();
-List<Work> wList = new WorkDAO().getEmpWise(profileDb.getEmpIdFromLogin(loginId), Work.STATUS_FAILED);
-request.setAttribute("wList", wList);
-%>
+	String loginId = (String) session.getAttribute("user");
+		ProfileDAO profileDb = new ProfileDAO();
+		List<Work> wList = new WorkDAO().findAllWorksByEmployeeIdAndStatus(profileDb.findEmpIdFromLoginId(loginId), Work.STATUS_FAILED);
+		request.setAttribute("wList", wList);
+	%>
 
 <table class="data-grid"><thead>
 	<tr>

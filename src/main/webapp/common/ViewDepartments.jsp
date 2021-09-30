@@ -37,9 +37,9 @@
 <jk:status var="status"/><%-- Status to show notification --%>
 
 <%
-List<Department> dList = new DepartmentDAO().getDepartmentList();
+List<Department> dList = new DepartmentDAO().findAllDepartments();
 request.setAttribute("dList", dList);
-request.setAttribute("profileDb", new ProfileDAO());
+request.setAttribute("profileDao", new ProfileDAO());
 %>
 
 <div class="page-content">
@@ -65,7 +65,7 @@ request.setAttribute("profileDb", new ProfileDAO());
 		
 		<td>${dept.getDepartmentName()}</td>
 		<td>${dept.getDepartmentAbbr()}</td>
-		<td>${profileDb.getUserID(dept.getDepartmentInChgID())}</td>
+		<td>${profileDao.findLoginIdByEmployeeId(dept.getDepartmentInChgID())}</td>
 	</tr>
 </c:forEach></c:when>
 

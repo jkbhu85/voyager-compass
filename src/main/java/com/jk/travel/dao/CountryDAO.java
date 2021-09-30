@@ -1,31 +1,23 @@
 package com.jk.travel.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 
-import com.jk.core.util.LoggerManager;
-import com.jk.travel.model.Country;
+import com.jk.core.util.*;
+import com.jk.travel.model.*;
 
 public class CountryDAO extends AbstractDAO {
-	private Connection con;
 
+	private static final String SQL_INSERT_COUNTRY = ""
+			+ "INSERT INTO COUNTRIES_MASTER VALUES(?,?,?,?)";
 
 	public boolean insertCountry(Country country) {
 		boolean flag = false;
-
-		// int countryID = getSequenceID("countries_master", "cnt_id");
-
+		Connection con = null;
 		try {
 			con = getConnection();
-			String sql = "insert into countries_master values(CNT_ID_SEQ.nextval,?,?,?,?)";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_COUNTRY);
 
-			// pstmt.setInt(1, countryID);
 			int col = 1;
 			pstmt.setString(col++, country.getCountryName());
 			pstmt.setString(col++, country.getCountryFullName());
@@ -38,33 +30,27 @@ public class CountryDAO extends AbstractDAO {
 				flag = true;
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return flag;
 	}
 
+	
+	private static final String SQL_UPDATE_COUNTRY = ""
+			+ " UPDATE COUNTRIES_MASTER "
+			+ " SET CNT_NAME=?,CNT_FULL_NAME=?,CNT_DESC=?,CNT_NLTY=? "
+			+ " WHERE CNT_ID=?";
 
 	public boolean updateCountry(Country country) {
 		boolean flag = false;
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "UPDATE countries_master SET cnt_name=?,cnt_full_name=?,cnt_desc=?,cnt_nlty=? WHERE cnt_id=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_COUNTRY);
 
 			pstmt.setString(1, country.getCountryName());
 			pstmt.setString(2, country.getCountryFullName());
@@ -78,34 +64,25 @@ public class CountryDAO extends AbstractDAO {
 				flag = true;
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return flag;
 	}
 
+	private static final String SQL_FIND_ALL_COUNTRIES = ""
+			+ "SELECT * FROM COUNTRIES_MASTER ORDER BY CNT_NAME";
 
-	public List<Country> getCountryList() {
+	public List<Country> findAllCountries() {
 		List<Country> list = new ArrayList<>();
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select * from countries_master order by cnt_name";
 			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql);
+			ResultSet rs = stmt.executeQuery(SQL_FIND_ALL_COUNTRIES);
 
 			while (rs.next()) {
 				Country country = new Country();
@@ -118,84 +95,41 @@ public class CountryDAO extends AbstractDAO {
 				list.add(country);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return list;
 	}
+	
+	private static final String SQL_FIND_COUNTRY_BY_ID = ""
+			+ "SELECT * FROM COUNTRIES_MASTER WHERE CNT_ID = ?";
 
-
-	public Country getCountry(int countryId) {
-		Country country = null;
+	public Country findCountryById(int countryId) {
+		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "select * from countries_master where cnt_id = '" + countryId + "'";
-
-			Statement stmt = con.createStatement();
-			ResultSet rs = stmt.executeQuery(sql);
-
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_COUNTRY_BY_ID);
+			ps.setInt(1, countryId);
+			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
-				country = new Country();
+				Country country = new Country();
 				country.setCountryID(rs.getInt(1));
 				country.setCountryName(rs.getString(2));
 				country.setCountryFullName(rs.getString(3));
 				country.setCountryDesc(rs.getString(4));
 				country.setNationality(rs.getString(5));
+				return country;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) {
-					con.close();
-				}
-
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return country;
+		return null;
 	}
 
-
-	// get country name
-	public String getCountryName(int countryId) {
-		String countryName = null;
-
-		try {
-			con = getConnection();
-
-			String sql = "SELECT cnt_name from countries_master where cnt_id='" + countryId + "'";
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(sql);
-
-			if (rs.next()) {
-				countryName = rs.getString(1);
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			LoggerManager.writeLogWarning(e);
-		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
-		}
-		return countryName;
-	}
 }

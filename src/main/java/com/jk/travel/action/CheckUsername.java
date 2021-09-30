@@ -24,7 +24,7 @@ public class CheckUsername extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String username = request.getParameter("username");
-		String user = new SecurityDAO().checkUser(username);
+		String user = new SecurityDAO().doesLoginIdExist(username);
 		String resText = "fail";
 
 		if (user == null)

@@ -92,7 +92,7 @@ public class RegisterAction extends HttpServlet {
 
 		boolean flag = false;
 
-		flag = new ProfileDAO().registration(rb);
+		flag = new ProfileDAO().saveProfile(rb);
 
 		if (flag) {
 			target = "/common/ViewEmployees.jsp";

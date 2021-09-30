@@ -48,7 +48,7 @@ public class RecoverPasswordAction extends HttpServlet {
 			}
 
 			String password = new SecurityDAO().recoverPasswordByQuestion(loginId, secQues, secAns);
-			Profile profile = new ProfileDAO().getProfile(loginId, request.getRealPath("/userimages"));
+			Profile profile = new ProfileDAO().findProfile(loginId, request.getRealPath("/userimages"));
 			String email = profile.getEmail();
 
 			if (password != null && password.length() > 0) {

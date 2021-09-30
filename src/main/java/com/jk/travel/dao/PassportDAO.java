@@ -3,30 +3,25 @@ package com.jk.travel.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import com.jk.core.util.DateWrapper;
 import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.Passport;
 
 public class PassportDAO extends AbstractDAO {
+	
+	private static final String SQL_INSERT_PASSPORT = ""
+			+ "INSERT INTO PASSPORTS VALUES(?,?,?,?,?,?,?,?,?,?)";
 
-	public boolean addPassport(Passport ppt) {
+	public boolean insertPassport(Passport ppt) {
 		Connection con = null;
-		Boolean status = false;
+		boolean status = false;
 
 		try {
-			// int pptId = getSequenceID("Passports", "ppt_id");
-			// if (pptId == 0) pptId = 1;
-
 			con = getConnection();
-
-			String sql = "INSERT INTO Passports VALUES(PPT_ID_SEQ.nextval,?,?,?,?,?,?,?,?,?,?)";
-
-			PreparedStatement insertPpt = con.prepareStatement(sql);
+			PreparedStatement insertPpt = con.prepareStatement(SQL_INSERT_PASSPORT);
 
 			int col = 1;
-			// insertPpt.setInt(col++, ppt.getPptId());
 			insertPpt.setInt(col++, ppt.getEmpId());
 			insertPpt.setInt(col++, ppt.getCntId());
 			insertPpt.setString(col++, ppt.getPptType());
@@ -40,38 +35,28 @@ public class PassportDAO extends AbstractDAO {
 
 			status = insertPpt.executeUpdate() > 0;
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
+	private static final String SQL_UPDATE_PASSPORT = ""
+			+ " UPDATE PASSPORTS "
+			+ " SET CNT_PPT_FK=?, PPT_TYPE=?, PPT_NUMBER=?, PPT_BIRTH_PLACE=?, "
+			+ " PPT_ISSUE_DATE=?, PPT_EXPIRY_DATE=?, PPT_ISSUE_PLACE=?, "
+			+ " PPT_ADDRESS=?, PPT_COMMENTS=? WHERE PPT_ID=?";
 
 	public boolean updatePassport(Passport ppt) {
 		Connection con = null;
-		Boolean status = false;
+		boolean status = false;
 
 		try {
 			con = getConnection();
-
-			String sql = "UPDATE Passports SET cnt_ppt_fk=?, ppt_type=?, ppt_number=?, ppt_birth_place=?, "
-					+ " ppt_issue_date=?, ppt_expiry_date=?, ppt_issue_place=?, "
-					+ " ppt_address=?, ppt_comments=? WHERE ppt_id=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_PASSPORT);
 
 			pstmt.setInt(10, ppt.getPptId());
 			pstmt.setInt(1, ppt.getCntId());
@@ -84,35 +69,31 @@ public class PassportDAO extends AbstractDAO {
 			pstmt.setString(8, ppt.getAddress());
 			pstmt.setString(9, ppt.getComments());
 			status = true;
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
 
-	public Passport getPassport(int pptId) {
+	private static final String SQL_FIND_PASSPORT_BY_ID = ""
+			+ "SELECT * FROM PASSPORTS WHERE PPT_ID=?";
+
+	public Passport findPassportById(int pptId) {
 		Connection con = null;
-		Passport ppt = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT * FROM Passports where ppt_id=?";
-			PreparedStatement ps = con.prepareStatement(sql);
+			PreparedStatement ps = con.prepareStatement(SQL_FIND_PASSPORT_BY_ID);
 			ps.setInt(1, pptId);
 
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				ppt = new Passport();
+				Passport ppt = new Passport();
 
 				ppt.setPptId(rs.getInt(1));
 				ppt.setEmpId(rs.getInt(2));
@@ -127,74 +108,61 @@ public class PassportDAO extends AbstractDAO {
 				ppt.setComments(rs.getString(11));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return ppt;
+		return null;
 	}
 
 
-	public boolean passportExists(int pptId) {
+	private static final String SQL_DOES_PASSPORT_EXIST_BY_ID = ""
+			+ "SELECT PPT_ID FROM PASSPORTS WHERE PPT_ID=?";
+
+	public boolean doesPassportExists(int pptId) {
 		Connection con = null;
-		Boolean status = false;
+		boolean status = false;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ppt_id FROM Passports where ppt_id=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_DOES_PASSPORT_EXIST_BY_ID);
 			pstmt.setInt(1, pptId);
 
 			ResultSet rs = pstmt.executeQuery();
-
-			if (rs.next()) {
-				status = true;
-			}
+			status = rs.next();
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
 
-	public int getPptIdFromEmp(int empId) {
+	private static final String SQL_FIND_PASSPORT_ID_BY_EMP_ID = ""
+			+ "SELECT PPT_ID FROM PASSPORTS WHERE EMP_PPT_FK=?";
+
+	public int findPassportIdByEmployeeId(int empId) {
 		Connection con = null;
-		int pptId = 0;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT ppt_id FROM Passports where emp_ppt_fk=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_PASSPORT_ID_BY_EMP_ID);
 			pstmt.setInt(1, empId);
 
 			ResultSet rs = pstmt.executeQuery();
 
 			if (rs.next()) {
-				pptId = rs.getInt(1);
+				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return pptId;
-
+		return 0;
 	}
 }

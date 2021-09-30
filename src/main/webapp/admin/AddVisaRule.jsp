@@ -40,7 +40,7 @@
 <div id="formErrors" tabindex="0"></div>
 
 <%
-request.setAttribute("cList", new CountryDAO().getCountryList());
+request.setAttribute("cList", new CountryDAO().findAllCountries());
 request.setAttribute("vtList", new VisaTypeDAO().getVisaTypeList());
 %>
 

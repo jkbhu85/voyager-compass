@@ -40,7 +40,7 @@ public class GetVisaTypes extends HttpServlet {
 
 		try {
 			// System.out.println("Countryid: " + countryId);
-			list = new VisaTypeDAO().getVisaTypeList(countryId);
+			list = new VisaTypeDAO().findAllVisaTypesByCountryId(countryId);
 		} catch (Exception e) {
 			e.printStackTrace();
 			status = "fail";

@@ -41,9 +41,9 @@
 
 <%
 String deptno = request.getParameter("deptNo");
-Department dept = new DepartmentDAO().getDeptatment(Integer.parseInt(deptno));
+Department dept = new DepartmentDAO().findDeptatmentById(Integer.parseInt(deptno));
 
-List<Profile> pList = new ProfileDAO().getEmpList(deptno);
+List<Profile> pList = new ProfileDAO().findAllEmployeesByDepartmentId(deptno);
 
 request.setAttribute("dept", dept);
 request.setAttribute("pList", pList);

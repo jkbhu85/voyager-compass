@@ -1,17 +1,19 @@
 package com.jk.travel.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
-import com.jk.core.util.LoggerManager;
-import com.jk.travel.model.Stay;
-import com.jk.travel.model.Work;
+import com.jk.core.util.*;
+import com.jk.travel.model.*;
 
 public class StayDAO extends AbstractDAO {
+	
+	private static final String SQL_INSERT_STAY = ""
+			+ " INSERT INTO EMPLOYEESSTAYMASTER "
+			+ " VALUES(?, ?, ?, ?)";
+	private static final String SQL_UPDATE_WORK_STATUS = ""
+			+ "UPDATE WORKS SET WORK_STATUS=? WHERE WORK_ID=?";
 
-	public boolean addStay(Stay stay) {
+	public boolean saveStay(Stay stay) {
 		Connection con = null;
 		boolean status = false;
 
@@ -19,11 +21,7 @@ public class StayDAO extends AbstractDAO {
 			con = getConnection();
 			con.setAutoCommit(false);
 
-			String sql = "INSERT INTO EmployeesStayMaster "
-					+ "VALUES(STAY_ID_SEQ.nextval, ?, ?, ?, ?)";
-			String workSql = "update works set work_status=? where work_id=?";
-
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_STAY);
 			int col = 1;
 			pstmt.setInt(col++, stay.getTravelId());
 			pstmt.setInt(col++, stay.getHotelId());
@@ -32,8 +30,8 @@ public class StayDAO extends AbstractDAO {
 
 			boolean status1 = pstmt.executeUpdate() > 0;
 
-			PreparedStatement pwork = con.prepareStatement(workSql);
-			int workId = new TravelMasterDAO().get(stay.getTravelId()).getWorkId();
+			PreparedStatement pwork = con.prepareStatement(SQL_UPDATE_WORK_STATUS);
+			int workId = new TravelMasterDAO().findTravelById(stay.getTravelId()).getWorkId();
 			pwork.setInt(1, Work.STATUS_PREPARED);
 			pwork.setInt(2, workId);
 
@@ -49,27 +47,20 @@ public class StayDAO extends AbstractDAO {
 			}
 
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
+
+	private static final String SQL_UPDATE_STAY = ""
+			+ " UPDATE EMPLOYEESSTAYMASTER "
+			+ " SET TRAVELID=?, HOTELID=?, ROOMNO=?, PICKUPVEHICLENO=? "
+			+ " WHERE STAYID=?";
 
 	public boolean updateStay(Stay stay) {
 		Connection con = null;
@@ -77,11 +68,8 @@ public class StayDAO extends AbstractDAO {
 
 		try {
 			con = getConnection();
-			String sql = "UPDATE EmployeesStayMaster "
-					+ "SET travelId=?, hotelId=?, roomno=?, pickupvehicleno=? "
-					+ "WHERE stayId=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_STAY);
 			pstmt.setInt(1, stay.getTravelId());
 			pstmt.setInt(2, stay.getHotelId());
 			pstmt.setString(3, stay.getRoomNo());
@@ -92,37 +80,27 @@ public class StayDAO extends AbstractDAO {
 
 			status = count > 0;
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return status;
 	}
 
 
-	public Stay getStay(int stayId) {
+	private static final String SQL_FIND_STATE_BY_ID = ""
+			+ "SELECT * FROM EMPLOYEESSTAYMASTER WHERE STAYID=?";
+
+	public Stay findStayById(int stayId) {
 		Stay stay = null;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT * FROM EmployeesStayMaster WHERE stayid=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_STATE_BY_ID);
 			pstmt.setInt(1, stayId);
 
 			ResultSet rs = pstmt.executeQuery();
@@ -136,63 +114,39 @@ public class StayDAO extends AbstractDAO {
 				stay.setVehicleNo(rs.getString(5));
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
 		return stay;
 	}
 
+	private static final String SQL_FIND_STAY_ID_BY_TRAVEL_ID = ""
+			+ "SELECT STAYID FROM EMPLOYEESSTAYMASTER WHERE TRAVELID=?";
 
 	public int getStayIdFromTravel(String travelId) {
-		int stayId = 0;
 		Connection con = null;
 
 		try {
 			con = getConnection();
-			String sql = "SELECT stayid FROM EmployeesStayMaster WHERE travelid=?";
 
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_FIND_STAY_ID_BY_TRAVEL_ID);
 			pstmt.setString(1, travelId);
 
 			ResultSet rs = pstmt.executeQuery();
 
 			if (rs.next()) {
-				stayId = rs.getInt(1);
+				return rs.getInt(1);
 			}
 		} catch (Exception e) {
-			if (con != null) {
-				try {
-					con.rollback();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-			}
-
-			e.printStackTrace();
+			DaoUtils.rollback(con);
 			LoggerManager.writeLogSevere(e);
 		} finally {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
+			DaoUtils.closeCon(con);
 		}
 
-		return stayId;
+		return 0;
 	}
 }

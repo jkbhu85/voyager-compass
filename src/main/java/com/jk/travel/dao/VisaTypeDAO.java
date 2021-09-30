@@ -11,19 +11,17 @@ import com.jk.core.util.LoggerManager;
 import com.jk.travel.model.VisaType;
 
 public class VisaTypeDAO extends AbstractDAO {
-	// insert visatype
+	
+	private static final String SQL_INSERT_VISA_TYPE = ""
+			+ "INSERT INTO VISA_TYPES VALUES(?,?,?,?,?,?,?,?)";
+	
 	public boolean insertVisaType(VisaType visaType) {
 		Connection con = null;
-		boolean flag = false;
-		// int visaID = getSequenceID("VISA_TYPES", "VT_ID");
 
 		try {
 			con = getConnection();
-			PreparedStatement pstmt = con
-					.prepareStatement(
-							"insert into VISA_TYPES values(VTYPE_ID_SEQ.nextval,?,?,?,?,?,?,?,?)");
+			PreparedStatement pstmt = con.prepareStatement(SQL_INSERT_VISA_TYPE);
 
-			// pstmt.setInt(1, visaID);
 			int col = 1;
 			pstmt.setInt(col++, visaType.getCntVtFk());
 			pstmt.setString(col++, visaType.getVisaTypeName());
@@ -34,33 +32,29 @@ public class VisaTypeDAO extends AbstractDAO {
 			pstmt.setString(col++, visaType.getStampGuide());
 			pstmt.setInt(col++, visaType.getReqAdv());
 
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) flag = true;
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return flag;
+		return false;
 	}
 
+	private static final String SQL_UPDATE_VISA_TYPE = ""
+			+ " UPDATE VISA_TYPES "
+			+ " SET "
+			+ "   CNT_VT_FK=?,VT_NAME=?,VT_ABBR=?, "
+			+ "   VT_DESC=?,VT_ELEG=?,VT_STAY_MAX_DUR=?, "
+			+ "   VT_STAMP_GUIDE=?,VT_REQUIRED_ADV=? "
+			+ " WHERE VT_ID=? ";
 
-	// updateVisaTypes
 	public boolean updateVisaType(VisaType visaType) {
 		Connection con = null;
-		boolean flag = false;
 
 		try {
 			con = getConnection();
-			String sql = "update visa_types set cnt_vt_fk=?,vt_name=?,vt_abbr=?,"
-					+ " vt_desc=?,vt_eleg=?,vt_stay_max_dur=?,vt_stamp_guide=?,vt_required_adv=? where vt_id=?";
-			PreparedStatement pstmt = con.prepareStatement(sql);
+			PreparedStatement pstmt = con.prepareStatement(SQL_UPDATE_VISA_TYPE);
 
 			pstmt.setInt(1, visaType.getCntVtFk());
 			pstmt.setString(2, visaType.getVisaTypeName());
@@ -72,22 +66,25 @@ public class VisaTypeDAO extends AbstractDAO {
 			pstmt.setInt(8, visaType.getReqAdv());
 			pstmt.setInt(9, visaType.getVisaTypeID());
 
-			int i = pstmt.executeUpdate();
-
-			if (i > 0) flag = true;
+			return pstmt.executeUpdate() > 0;
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
-		return flag;
+		return false;
 	}
 
+	private static final String SQL_FIND_ALL_VISA_TYPES = ""
+			+ " SELECT "
+			+ "   V.* "
+			+ " FROM "
+			+ "   VISA_TYPES V "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON V.CNT_VT_FK=C.CNT_ID "
+			+ " ORDER BY "
+			+ "    C.CNT_NAME ASC, "
+			+ "    V.VT_NAME";
 
 	/**
 	 * Returns list of all visa types available sorted by country names and by
@@ -101,11 +98,9 @@ public class VisaTypeDAO extends AbstractDAO {
 
 		try {
 			con = getConnection();
-			String sql = "select v.* from visa_types v inner join countries_master c on "
-					+ " v.cnt_vt_fk=c.cnt_id order by c.cnt_name asc, v.vt_name";
 
 			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(sql);
+			ResultSet rs = st.executeQuery(SQL_FIND_ALL_VISA_TYPES);
 
 			while (rs.next()) {
 				VisaType visa = new VisaType();
@@ -123,37 +118,43 @@ public class VisaTypeDAO extends AbstractDAO {
 				list.add(visa);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
 
+	private static final String SQL_FIND_ALL_VISA_TYPES_BY_COUNTRY_ID = ""
+			+ " SELECT "
+			+ "   V.* "
+			+ " FROM "
+			+ "   VISA_TYPES V "
+			+ "   INNER JOIN COUNTRIES_MASTER C "
+			+ "     ON V.CNT_VT_FK=C.CNT_ID "
+			+ " WHERE "
+			+ "   V.CNT_VT_FK=? "
+			+ " ORDER BY "
+			+ "   V.VT_NAME";
+
 	/**
 	 * Returns list of all visa types available for a country sorted by visa
 	 * names.
 	 * 
-	 * @param countryFilter
+	 * @param countryId
 	 *            id of the country to filter visa types
-	 * @returnlist of visa types; never returns null value.
+	 * @return list of visa types; never returns null value.
 	 */
-	public List<VisaType> getVisaTypeList(int countryFilter) {
+	public List<VisaType> findAllVisaTypesByCountryId(int countryId) {
 		Connection con = null;
 		List<VisaType> list = new ArrayList<>();
 
 		try {
 			con = getConnection();
-			String sql = "select v.* from visa_types v inner join countries_master c on "
-					+ " v.cnt_vt_fk=c.cnt_id where v.cnt_vt_fk=? order by v.vt_name";
 
-			PreparedStatement st = con.prepareStatement(sql);
-			st.setInt(1, countryFilter);
+			PreparedStatement st = con.prepareStatement(SQL_FIND_ALL_VISA_TYPES_BY_COUNTRY_ID);
+			st.setInt(1, countryId);
 
 			ResultSet rs = st.executeQuery();
 
@@ -173,19 +174,17 @@ public class VisaTypeDAO extends AbstractDAO {
 				list.add(visa);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return list;
 	}
 
 
-	// select Particular Department
+	private static final String SQL_FIND_VISA_TYPE_BY_ID = ""
+			+ "SELECT * FROM VISA_TYPES WHERE VT_ID=?";
+
 	public VisaType getVisaType(int visaTypeId) {
 		Connection con = null;
 		VisaType visa = null;
@@ -193,8 +192,7 @@ public class VisaTypeDAO extends AbstractDAO {
 		try {
 			con = getConnection();
 			visa = new VisaType();
-			String sql = "select * from visa_types where vt_id=?";
-			PreparedStatement st = con.prepareStatement(sql);
+			PreparedStatement st = con.prepareStatement(SQL_FIND_VISA_TYPE_BY_ID);
 			st.setInt(1, visaTypeId);
 
 			ResultSet rs = st.executeQuery();
@@ -210,16 +208,10 @@ public class VisaTypeDAO extends AbstractDAO {
 				visa.setStampGuide(rs.getString(8));
 				visa.setReqAdv(rs.getInt(9));
 			}
-
 		} catch (Exception e) {
-			e.printStackTrace();
 			LoggerManager.writeLogWarning(e);
 		} finally {
-			try {
-				if (con != null) con.close();
-
-			} catch (Exception e) {
-			}
+			DaoUtils.closeCon(con);
 		}
 		return visa;
 	}
