@@ -5,7 +5,7 @@
 	
 	<tag>
 		<name>status</name>
-		<tag-class>com.jk.core.tags.StatusTag</tag-class>
+		<tag-class>com.jk.vc.view.tags.StatusTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
 			<name>var</name>
@@ -16,7 +16,7 @@
 	
 	<tag>
 		<name>notify</name>
-		<tag-class>com.jk.core.tags.NotifyTag</tag-class>
+		<tag-class>com.jk.vc.view.tags.NotifyTag</tag-class>
 		<body-content>empty</body-content>
 		<attribute>
 			<name>attr</name>

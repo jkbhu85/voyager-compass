@@ -4,7 +4,7 @@ import javax.servlet.*;
 import javax.servlet.annotation.*;
 import javax.servlet.http.*;
 
-import com.jk.travel.dao.*;
+import com.jk.vc.dao.*;
 
 @WebServlet(urlPatterns = { "/InitServlet" }, loadOnStartup = 0)
 @WebInitParam(name = "config", value = "/WEB-INF/config/system.properties")

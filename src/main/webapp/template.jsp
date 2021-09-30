@@ -1,9 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" trimDirectiveWhitespaces="true"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="jktags" prefix="jk" %>
-<%@ page import="com.jk.travel.model.*"%> 
+<%@ page import="com.jk.vc.model.*"%> 
 <%@ page import="java.util.Enumeration,java.util.List"%>
-<%@ page import="com.jk.travel.dao.*,com.jk.core.util.DateWrapper"%>
+<%@ page import="com.jk.vc.dao.*,com.jk.vc.util.DateUtils"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -22,14 +22,12 @@
 
 
 <body>
-<%-- Checking if user is logged in or not --%>
-<c:if test="${empty sessionScope.role}">
-	<c:redirect url="/index.jsp" />
-</c:if>
 
 <jsp:include page="/oth/header.html"/>
 
-<jsp:include page="/oth/selectMenu.jsp"/>
+<c:if test="${not empty sessionScope.role}">
+	<jsp:include page="/oth/selectMenu.jsp"/>
+</c:if>
 
 
 <main>
